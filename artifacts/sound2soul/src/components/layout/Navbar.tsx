@@ -32,6 +32,9 @@ export const Navbar: React.FC = () => {
             <Link href="/explore" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150">
               Explore
             </Link>
+            <Link href="/leaderboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150">
+              Charts
+            </Link>
             {user?.role === 'creator' && (
               <Link href="/creator/dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150">
                 Dashboard

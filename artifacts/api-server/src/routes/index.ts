@@ -13,6 +13,7 @@ import uploadRouter from "./upload";
 import adminRouter from "./admin";
 import notificationsRouter from "./notifications";
 import analyticsRouter from "./analytics";
+import leaderboardRouter from "./leaderboard";
 
 const router: IRouter = Router();
 
@@ -30,5 +31,6 @@ router.use("/upload", uploadRouter);
 router.use("/admin", adminRouter);
 router.use("/notifications", notificationsRouter);
 router.use("/analytics", analyticsRouter);
+router.use("/leaderboard", leaderboardRouter);
 
 export default router;

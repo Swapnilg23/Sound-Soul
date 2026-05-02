@@ -19,6 +19,7 @@ import CreatorUpload from "@/pages/creator/upload";
 import CreatorProfile from "@/pages/creator/profile";
 import TrackDetail from "@/pages/track";
 import Library from "@/pages/library";
+import Leaderboard from "@/pages/leaderboard";
 import AdminDashboard from "@/pages/admin";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ function Router() {
         <Route path="/signup" component={Signup} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/explore" component={Explore} />
+        <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/track/:slug" component={TrackDetail} />
 
         {/* Listener Routes */}
