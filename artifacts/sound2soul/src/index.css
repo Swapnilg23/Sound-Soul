@@ -49,57 +49,56 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* DARK MODE ONLY */
 :root {
-  --button-outline: rgba(255,255,255, .10);
-  --badge-outline: rgba(255,255,255, .05);
+  --button-outline: rgba(255,255,255, .08);
+  --badge-outline: rgba(255,255,255, .04);
 
-  --opaque-button-border-intensity: 9; 
+  --opaque-button-border-intensity: 9;
 
-  --elevate-1: rgba(255,255,255, .04);
-  --elevate-2: rgba(255,255,255, .09);
+  --elevate-1: rgba(255,255,255, .03);
+  --elevate-2: rgba(255,255,255, .07);
 
-  /* Deep midnight background */
-  --background: 240 10% 4%; 
-  --foreground: 0 0% 98%; 
+  /* Near-pure black with a whisper of violet — our brand, not Suno's pure black */
+  --background: 244 14% 5%;
+  --foreground: 0 0% 97%;
 
-  --border: 240 5% 15%; 
-  --input: 240 5% 15%; 
-  --ring: 260 60% 60%; 
+  --border: 244 8% 14%;
+  --input: 244 8% 14%;
+  --ring: 262 72% 62%;
 
-  --card: 240 10% 6%; 
-  --card-foreground: 0 0% 98%; 
-  --card-border: 240 5% 15%; 
+  --card: 244 14% 7%;
+  --card-foreground: 0 0% 97%;
+  --card-border: 244 8% 12%;
 
-  --popover: 240 10% 6%; 
-  --popover-foreground: 0 0% 98%; 
-  --popover-border: 240 5% 15%; 
+  --popover: 244 14% 7%;
+  --popover-foreground: 0 0% 97%;
+  --popover-border: 244 8% 12%;
 
   /* Warm violet */
-  --primary: 260 60% 60%; 
-  --primary-foreground: 0 0% 100%; 
+  --primary: 262 72% 62%;
+  --primary-foreground: 0 0% 100%;
 
-  /* Amber secondary */
-  --secondary: 35 90% 55%; 
-  --secondary-foreground: 0 0% 10%; 
+  /* Amber */
+  --secondary: 38 92% 58%;
+  --secondary-foreground: 0 0% 8%;
 
-  --muted: 240 5% 15%; 
-  --muted-foreground: 240 5% 65%; 
+  --muted: 244 8% 14%;
+  --muted-foreground: 244 8% 60%;
 
-  --accent: 260 30% 20%; 
-  --accent-foreground: 0 0% 98%; 
+  --accent: 262 30% 18%;
+  --accent-foreground: 0 0% 97%;
 
-  --destructive: 0 62.8% 30.6%; 
-  --destructive-foreground: 0 0% 98%; 
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 97%;
 
-  --app-font-sans: 'Inter', sans-serif;
+  --app-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
-  --radius: .5rem; 
+  --radius: .75rem;
 }
 
 .dark {
-  /* same as root since we are dark mode first */
+  /* same as root — we are dark mode only */
 }
 
 @layer base {
@@ -109,5 +108,16 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Smooth scrolling for horizontal carousels */
+  .scroll-row {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scroll-row::-webkit-scrollbar {
+    display: none;
   }
 }

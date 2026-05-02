@@ -1,117 +1,242 @@
 import React from 'react';
 import { Link } from 'wouter';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth';
 import { motion } from 'framer-motion';
+
+const HERO_CARDS = [
+  {
+    title: 'Echo of the Unnamed',
+    artist: 'Nova Hymns',
+    img: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=360&h=360&fit=crop',
+    rotate: '-6deg',
+    side: 'left',
+  },
+  {
+    title: 'Chai Steam Morning',
+    artist: 'LoFi Aarav',
+    img: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=360&h=360&fit=crop',
+    rotate: '4deg',
+    side: 'left2',
+  },
+  {
+    title: 'Sector Seven Reverie',
+    artist: 'DreamCircuit',
+    img: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=360&h=360&fit=crop',
+    rotate: '7deg',
+    side: 'right',
+  },
+  {
+    title: 'The Shape of Absence',
+    artist: 'Mira Echo',
+    img: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=360&h=360&fit=crop',
+    rotate: '-4deg',
+    side: 'right2',
+  },
+];
+
+const PRESS_LOGOS = [
+  { name: 'TechCrunch', label: 'TechCrunch' },
+  { name: 'Pitchfork', label: 'Pitchfork' },
+  { name: 'Wired', label: 'Wired' },
+  { name: 'Rolling Stone', label: 'Rolling Stone' },
+  { name: 'Billboard', label: 'Billboard' },
+];
 
 export default function Landing() {
   const { user } = useAuth();
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/20 via-background to-background -z-10"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
+    <div className="flex flex-col min-h-screen overflow-x-hidden">
+
+      {/* ── Hero ── */}
+      <section className="relative min-h-[92vh] flex flex-col items-center justify-center overflow-hidden px-4">
+
+        {/* Ambient background glow */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-primary/12 rounded-full blur-[140px] pointer-events-none" />
+          <div className="absolute bottom-0 left-1/4 w-[500px] h-[400px] bg-secondary/8 rounded-full blur-[120px] pointer-events-none" />
+        </div>
+
+        {/* Floating album cards — left */}
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-4 -translate-x-12 xl:-translate-x-4">
+          {HERO_CARDS.filter(c => c.side === 'left' || c.side === 'left2').map((card, i) => (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.9, delay: 0.2 + i * 0.15, ease: 'easeOut' }}
+              style={{ rotate: card.rotate }}
+              className="w-44 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/8"
+            >
+              <img src={card.img} alt={card.title} className="w-full aspect-square object-cover" />
+              <div className="bg-[#16141c] px-3 py-2.5">
+                <p className="text-xs font-semibold text-foreground truncate">{card.title}</p>
+                <p className="text-[10px] text-muted-foreground truncate mt-0.5">{card.artist}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Floating album cards — right */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-4 translate-x-12 xl:translate-x-4">
+          {HERO_CARDS.filter(c => c.side === 'right' || c.side === 'right2').map((card, i) => (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.9, delay: 0.3 + i * 0.15, ease: 'easeOut' }}
+              style={{ rotate: card.rotate }}
+              className="w-44 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/8"
+            >
+              <img src={card.img} alt={card.title} className="w-full aspect-square object-cover" />
+              <div className="bg-[#16141c] px-3 py-2.5">
+                <p className="text-xs font-semibold text-foreground truncate">{card.title}</p>
+                <p className="text-[10px] text-muted-foreground truncate mt-0.5">{card.artist}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Center text */}
+        <div className="relative z-10 max-w-3xl mx-auto text-center space-y-8">
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6"
+            transition={{ duration: 0.85, ease: 'easeOut' }}
+            className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.05]"
           >
-            Build Your <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">AI Music</span> Identity
+            Your sound.{' '}
+            <span className="bg-gradient-to-r from-primary via-primary/80 to-secondary bg-clip-text text-transparent">
+              Your story.
+            </span>{' '}
+            Their trust.
           </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
+
+          <motion.p
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-10"
+            transition={{ duration: 0.85, delay: 0.15, ease: 'easeOut' }}
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
           >
             A trust-first platform where AI-assisted creators publish tracks with emotional context, disclose their process, and build a genuine fanbase.
           </motion.p>
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            transition={{ duration: 0.85, delay: 0.28, ease: 'easeOut' }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3"
           >
             {!user ? (
               <>
-                <Button size="lg" className="text-lg px-8 py-6 rounded-full w-full sm:w-auto" asChild>
-                  <Link href="/signup">Start Creating</Link>
-                </Button>
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6 rounded-full w-full sm:w-auto border-white/20 hover:bg-white/5" asChild>
-                  <Link href="/explore">Explore Music</Link>
-                </Button>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center justify-center text-base font-semibold bg-foreground text-background px-8 py-3 rounded-full hover:bg-foreground/90 transition-colors duration-150 w-full sm:w-auto"
+                >
+                  Start Creating
+                </Link>
+                <Link
+                  href="/explore"
+                  className="inline-flex items-center justify-center text-base font-medium bg-white/8 text-foreground px-8 py-3 rounded-full hover:bg-white/12 transition-colors duration-150 border border-white/10 w-full sm:w-auto"
+                >
+                  Explore Music
+                </Link>
               </>
             ) : (
-              <Button size="lg" className="text-lg px-8 py-6 rounded-full w-full sm:w-auto" asChild>
-                <Link href={user.role === 'creator' ? '/creator/dashboard' : '/explore'}>
-                  Go to {user.role === 'creator' ? 'Dashboard' : 'Explore'}
-                </Link>
-              </Button>
+              <Link
+                href={user.role === 'creator' ? '/creator/dashboard' : '/explore'}
+                className="inline-flex items-center justify-center text-base font-semibold bg-foreground text-background px-8 py-3 rounded-full hover:bg-foreground/90 transition-colors duration-150"
+              >
+                {user.role === 'creator' ? 'Go to Dashboard' : 'Explore Music'}
+              </Link>
             )}
           </motion.div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 bg-card/30 border-y border-white/5 relative z-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">More than just playback.</h2>
-            <p className="text-xl text-muted-foreground">Sound2Soul provides the context that listeners crave.</p>
+      {/* ── Press strip ── */}
+      <section className="py-10 border-y border-white/5">
+        <div className="max-w-4xl mx-auto px-6 flex flex-col items-center gap-6">
+          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground/50">
+            Built for the AI music moment
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+            {PRESS_LOGOS.map(p => (
+              <span key={p.name} className="text-sm font-bold text-muted-foreground/30 tracking-wide uppercase select-none">
+                {p.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Three pillars ── */}
+      <section className="py-28">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="text-center mb-16 space-y-3">
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">More than playback.</h2>
+            <p className="text-lg text-muted-foreground max-w-xl mx-auto">Sound2Soul gives every track the context listeners deserve.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-background/50 border border-white/5 p-8 rounded-2xl hover:border-primary/30 transition-colors">
-              <div className="h-12 w-12 bg-primary/20 text-primary rounded-xl flex items-center justify-center mb-6">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          <div className="grid md:grid-cols-3 gap-5">
+            <div className="bg-card/50 p-8 rounded-3xl ring-1 ring-white/6 hover:ring-primary/20 transition-all duration-300 group">
+              <div className="h-11 w-11 bg-primary/15 text-primary rounded-2xl flex items-center justify-center mb-7 group-hover:bg-primary/25 transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
               </div>
               <h3 className="text-xl font-bold mb-3">Radical Transparency</h3>
-              <p className="text-muted-foreground">Build trust with the "AI Process Disclosed" badge. Show exactly how AI assisted your creative process.</p>
+              <p className="text-muted-foreground leading-relaxed">Every track carries an AI Process Disclosed badge. Show listeners exactly how AI contributed to your work.</p>
             </div>
-            
-            <div className="bg-background/50 border border-white/5 p-8 rounded-2xl hover:border-secondary/30 transition-colors">
-              <div className="h-12 w-12 bg-secondary/20 text-secondary rounded-xl flex items-center justify-center mb-6">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+
+            <div className="bg-card/50 p-8 rounded-3xl ring-1 ring-white/6 hover:ring-secondary/20 transition-all duration-300 group">
+              <div className="h-11 w-11 bg-secondary/15 text-secondary rounded-2xl flex items-center justify-center mb-7 group-hover:bg-secondary/25 transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
               </div>
               <h3 className="text-xl font-bold mb-3">Soul Stories</h3>
-              <p className="text-muted-foreground">Every track comes with a Soul Story—the memory, emotion, or moment that inspired its creation.</p>
+              <p className="text-muted-foreground leading-relaxed">Every track comes with a Soul Story — the memory, emotion, or moment that sparked its creation.</p>
             </div>
 
-            <div className="bg-background/50 border border-white/5 p-8 rounded-2xl hover:border-accent/30 transition-colors">
-              <div className="h-12 w-12 bg-accent text-white rounded-xl flex items-center justify-center mb-6">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            <div className="bg-card/50 p-8 rounded-3xl ring-1 ring-white/6 hover:ring-primary/20 transition-all duration-300 group">
+              <div className="h-11 w-11 bg-primary/15 text-primary rounded-2xl flex items-center justify-center mb-7 group-hover:bg-primary/25 transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
               </div>
               <h3 className="text-xl font-bold mb-3">Direct Fan Growth</h3>
-              <p className="text-muted-foreground">Capture emails directly from your tracks. Turn casual listeners into dedicated fans you can reach anytime.</p>
+              <p className="text-muted-foreground leading-relaxed">Capture emails directly from your tracks. Turn casual listeners into fans you own and can reach anytime.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Pricing Preview */}
-      <section className="py-24 relative z-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8">Ready to share your sound?</h2>
-          <Button size="lg" className="text-lg px-8 py-6 rounded-full" asChild>
-            <Link href="/pricing">View Pricing Plans</Link>
-          </Button>
+      {/* ── CTA ── */}
+      <section className="py-24 border-t border-white/5">
+        <div className="max-w-2xl mx-auto px-6 text-center space-y-6">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Ready to share your sound?</h2>
+          <p className="text-muted-foreground text-lg">Join a community of creators who lead with authenticity.</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <Link
+              href="/signup"
+              className="inline-flex items-center justify-center text-base font-semibold bg-foreground text-background px-8 py-3 rounded-full hover:bg-foreground/90 transition-colors duration-150 w-full sm:w-auto"
+            >
+              Create Your Profile
+            </Link>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center justify-center text-base font-medium bg-white/8 text-foreground px-8 py-3 rounded-full hover:bg-white/12 transition-colors duration-150 border border-white/10 w-full sm:w-auto"
+            >
+              View Plans
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 border-t border-white/10 mt-auto bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
-          <div className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4 md:mb-0">
+      {/* ── Footer ── */}
+      <footer className="py-10 border-t border-white/8 mt-auto">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <span className="text-base font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             Sound2Soul
-          </div>
-          <div className="text-sm text-muted-foreground">
+          </span>
+          <p className="text-xs text-muted-foreground/50">
             &copy; {new Date().getFullYear()} Sound2Soul. All rights reserved.
-          </div>
+          </p>
         </div>
       </footer>
     </div>
