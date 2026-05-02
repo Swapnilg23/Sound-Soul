@@ -14,6 +14,7 @@ import adminRouter from "./admin";
 import notificationsRouter from "./notifications";
 import analyticsRouter from "./analytics";
 import leaderboardRouter from "./leaderboard";
+import homepageRouter from "./homepage";
 
 const router: IRouter = Router();
 
@@ -32,5 +33,6 @@ router.use("/admin", adminRouter);
 router.use("/notifications", notificationsRouter);
 router.use("/analytics", analyticsRouter);
 router.use("/leaderboard", leaderboardRouter);
+router.use("/homepage", homepageRouter);
 
 export default router;
