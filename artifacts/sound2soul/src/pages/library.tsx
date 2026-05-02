@@ -35,7 +35,7 @@ export default function Library() {
   useEffect(() => {
     if (activeTab !== 'reposts') return;
     setRepostsLoading(true);
-    apiFetch('/api/interactions/library/reposts')
+    apiFetch('/api/library/reposts')
       .then(d => setReposts(d?.tracks ?? []))
       .catch(() => {})
       .finally(() => setRepostsLoading(false));

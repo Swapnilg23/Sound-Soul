@@ -85,7 +85,7 @@ export default function TrackDetail() {
 
   useEffect(() => {
     if (!track?.id || !user) return;
-    apiFetch(`/api/interactions/reposts/${track.id}`)
+    apiFetch(`/api/reposts/${track.id}`)
       .then(d => { setIsReposted(d.isReposted); setRepostCount(d.count ?? 0); })
       .catch(() => {});
   }, [track?.id, user]);
@@ -133,12 +133,12 @@ export default function TrackDetail() {
     setRepostLoading(true);
     try {
       if (isReposted) {
-        await apiFetch(`/api/interactions/reposts/${track.id}`, { method: 'DELETE' });
+        await apiFetch(`/api/reposts/${track.id}`, { method: 'DELETE' });
         setIsReposted(false);
         setRepostCount(c => Math.max(0, c - 1));
         toast.success('Repost removed');
       } else {
-        await apiFetch(`/api/interactions/reposts/${track.id}`, { method: 'POST' });
+        await apiFetch(`/api/reposts/${track.id}`, { method: 'POST' });
         setIsReposted(true);
         setRepostCount(c => c + 1);
         toast.success('Reposted to your profile!');
