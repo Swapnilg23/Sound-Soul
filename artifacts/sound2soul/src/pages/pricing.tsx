@@ -57,9 +57,6 @@ export default function Pricing() {
                   <AdIcon /> Ad-supported listening
                 </li>
               </ul>
-              <div className="mt-5 p-3 bg-background/60 rounded-xl border border-white/6 text-xs text-muted-foreground leading-relaxed">
-                Ads keep Sound2Soul free and fund payouts to creators. Upgrade to remove them.
-              </div>
             </CardContent>
             <CardFooter>
               <Button className="w-full rounded-full" variant="outline" asChild>
@@ -151,7 +148,7 @@ export default function Pricing() {
                   <CheckIcon /> Custom profile themes
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Revenue share from fan ads
+                  <CheckIcon /> Dedicated creator support
                 </li>
               </ul>
             </CardContent>
