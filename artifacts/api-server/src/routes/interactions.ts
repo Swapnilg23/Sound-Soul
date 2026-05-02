@@ -57,6 +57,16 @@ router.delete("/saves/:trackId", requireAuth, async (req, res) => {
   res.json({ message: "Unsaved" });
 });
 
+// Follow state check
+router.get("/follows/:creatorId", requireAuth, async (req, res) => {
+  const user = (req as any).user;
+  const { creatorId } = req.params;
+  const existing = await db.select().from(followsTable)
+    .where(and(eq(followsTable.followerUserId, user.id), eq(followsTable.creatorId, creatorId)))
+    .limit(1);
+  res.json({ isFollowing: !!existing[0] });
+});
+
 // Follow creator
 router.post("/follows/:creatorId", requireAuth, async (req, res) => {
   const user = (req as any).user;

@@ -1,14 +1,25 @@
-import React from 'react';
-import { useRoute } from 'wouter';
-import { useGetCreatorBySlug, useGetCreatorTracks } from '@workspace/api-client-react';
+import React, { useState, useEffect } from 'react';
+import { useRoute, Link } from 'wouter';
+import { useGetCreatorBySlug, useGetCreatorTracks, useFollowCreator, useUnfollowCreator } from '@workspace/api-client-react';
 import { useAuth } from '@/lib/auth';
-import { Link } from 'wouter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { calculateTrustScore } from '@/lib/trustScore';
 import { TrustScoreBadge } from '@/components/TrustScoreBadge';
 import { TrustScoreNudge } from '@/components/TrustScoreNudge';
+import { toast } from 'sonner';
+
+async function fetchFollowState(creatorId: string): Promise<boolean> {
+  const token = localStorage.getItem('sound2soul_token');
+  if (!token) return false;
+  const res = await fetch(`/api/follows/${creatorId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return false;
+  const data = await res.json();
+  return data.isFollowing ?? false;
+}
 
 export default function CreatorProfile() {
   const [, params] = useRoute('/creator/:slug');
@@ -23,8 +34,27 @@ export default function CreatorProfile() {
     query: { enabled: !!slug }
   });
 
-  if (isProfileLoading) return <ProfileSkeleton />;
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followLoading, setFollowLoading] = useState(false);
 
+  const followMutation = useFollowCreator();
+  const unfollowMutation = useUnfollowCreator();
+
+  useEffect(() => {
+    if (profile) {
+      setFollowerCount(profile.followerCount ?? 0);
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (profile?.id && user && !isOwnProfile) {
+      fetchFollowState(profile.id).then(setIsFollowing);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.id, user?.id]);
+
+  if (isProfileLoading) return <ProfileSkeleton />;
   if (!profile) {
     return <div className="text-center py-20 text-xl text-muted-foreground">Creator not found</div>;
   }
@@ -49,6 +79,33 @@ export default function CreatorProfile() {
     },
     tracks: tracksForScore,
   });
+
+  const handleFollow = async () => {
+    if (!user) {
+      toast.info('Sign in to follow creators');
+      return;
+    }
+    setFollowLoading(true);
+    const wasFollowing = isFollowing;
+    // Optimistic update
+    setIsFollowing(!wasFollowing);
+    setFollowerCount(c => wasFollowing ? Math.max(0, c - 1) : c + 1);
+    try {
+      if (wasFollowing) {
+        await unfollowMutation.mutateAsync(profile.id);
+      } else {
+        await followMutation.mutateAsync(profile.id);
+        toast.success(`Following ${profile.artistName}`);
+      }
+    } catch {
+      // Revert on error
+      setIsFollowing(wasFollowing);
+      setFollowerCount(c => wasFollowing ? c + 1 : Math.max(0, c - 1));
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
@@ -79,9 +136,13 @@ export default function CreatorProfile() {
 
             <div>
               <h1 className="text-3xl font-bold">{profile.artistName}</h1>
-              <div className="text-muted-foreground mt-1 flex gap-4 text-sm">
-                <span>{profile.followerCount || 0} followers</span>
-                <span>{profile.trackCount || 0} tracks</span>
+              <div className="text-muted-foreground mt-1.5 flex gap-4 text-sm">
+                <span className="tabular-nums">
+                  <span className="font-semibold text-foreground">{followerCount}</span> followers
+                </span>
+                <span className="tabular-nums">
+                  <span className="font-semibold text-foreground">{profile.trackCount || 0}</span> tracks
+                </span>
               </div>
             </div>
 
@@ -105,13 +166,40 @@ export default function CreatorProfile() {
               />
             )}
 
-            {!isOwnProfile && (
-              <Button className="w-full rounded-full">Follow Creator</Button>
-            )}
-            {isOwnProfile && (
+            {/* Follow / Dashboard button */}
+            {isOwnProfile ? (
               <Link href="/creator/dashboard">
                 <Button variant="outline" className="w-full rounded-full">Go to Dashboard</Button>
               </Link>
+            ) : (
+              <Button
+                className={`w-full rounded-full transition-all duration-200 ${
+                  isFollowing
+                    ? 'bg-white/8 text-foreground border border-white/15 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30'
+                    : ''
+                }`}
+                onClick={handleFollow}
+                disabled={followLoading}
+              >
+                {followLoading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    {isFollowing ? 'Unfollowing…' : 'Following…'}
+                  </span>
+                ) : isFollowing ? (
+                  <span className="flex items-center gap-1.5 group">
+                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                    </svg>
+                    Following
+                  </span>
+                ) : (
+                  'Follow Creator'
+                )}
+              </Button>
             )}
 
             {profile.bio && (
@@ -169,7 +257,7 @@ export default function CreatorProfile() {
                 {tracksData?.map(track => {
                   const allDisclosed =
                     !!track.aiInvolvementType &&
-                    !!(track.rightsConfirmation && Object.keys(track.rightsConfirmation).length > 0) &&
+                    !!(track.rightsConfirmation && Object.keys(track.rightsConfirmation as object).length > 0) &&
                     !!(track.soulStory && track.soulStory.trim().length > 15);
 
                   return (
