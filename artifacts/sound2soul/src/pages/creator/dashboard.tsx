@@ -10,7 +10,8 @@ import {
   Tooltip, ResponsiveContainer, Legend, RadarChart, PolarGrid,
   PolarAngleAxis, Radar, AreaChart, Area,
 } from 'recharts';
-import { MapPin, Flame, TrendingUp, Clock, Star, Sparkles } from 'lucide-react';
+import { MapPin, Flame, TrendingUp, Clock, Star, Sparkles, Check, ArrowRight } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
 
 type Tab = 'overview' | 'analytics' | 'insights';
 
@@ -82,6 +83,7 @@ function useInsights() {
 
 export default function CreatorDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const { user } = useAuth();
   const { data: stats, isLoading: isStatsLoading } = useGetDashboardStats();
   const { data: tracksData, isLoading: isTracksLoading } = useGetMyTracks();
   const { data: analyticsData, isLoading: isAnalyticsLoading } = useAnalytics();
@@ -130,6 +132,7 @@ export default function CreatorDashboard() {
           isStatsLoading={isStatsLoading}
           tracksData={tracksData}
           isTracksLoading={isTracksLoading}
+          creatorProfile={(user as any)?.creatorProfile}
         />
       )}
 
@@ -144,9 +147,13 @@ export default function CreatorDashboard() {
   );
 }
 
-function OverviewTab({ stats, isStatsLoading, tracksData, isTracksLoading }: any) {
+function OverviewTab({ stats, isStatsLoading, tracksData, isTracksLoading, creatorProfile }: any) {
   return (
     <div className="space-y-8">
+
+      {/* Profile Completion — shown until fully complete */}
+      <ProfileCompletion profile={creatorProfile} tracksData={tracksData} isTracksLoading={isTracksLoading} />
+
       {isStatsLoading ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 w-full rounded-xl" />)}
@@ -212,18 +219,262 @@ function OverviewTab({ stats, isStatsLoading, tracksData, isTracksLoading }: any
         )}
       </div>
 
-      {stats && !stats.trustProfileComplete && (
-        <Card className="bg-secondary/10 border-secondary/20">
-          <CardHeader>
-            <CardTitle className="text-secondary">Complete Your Trust Profile</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <p className="text-sm text-muted-foreground mb-4">Listeners are more likely to engage with creators who disclose their process.</p>
-            <Button variant="outline" asChild className="border-secondary/50 text-secondary hover:bg-secondary/20">
-              <Link href="/creator/onboarding">Edit Profile</Link>
-            </Button>
-          </CardContent>
-        </Card>
+    </div>
+  );
+}
+
+// ── Profile Completion Widget ─────────────────────────────────────────────────
+
+interface CompletionItem {
+  key: string;
+  label: string;
+  desc: string;
+  done: boolean;
+  pts: number;
+  bonus?: boolean;
+  href: string;
+}
+
+function ProfileCompletion({
+  profile,
+  tracksData,
+  isTracksLoading,
+}: {
+  profile: any;
+  tracksData: any;
+  isTracksLoading: boolean;
+}) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 120);
+    return () => clearTimeout(t);
+  }, []);
+
+  const items: CompletionItem[] = [
+    {
+      key: 'avatar',
+      label: 'Profile photo',
+      desc: 'Adds a face to your music and builds instant recognition',
+      done: !!profile?.avatarUrl,
+      pts: 10,
+      href: '/creator/onboarding',
+    },
+    {
+      key: 'bio',
+      label: 'Bio',
+      desc: 'Tell listeners who you are and where your music comes from',
+      done: !!(profile?.bio && profile.bio.trim().length > 15),
+      pts: 10,
+      href: '/creator/onboarding',
+    },
+    {
+      key: 'statement',
+      label: 'Creator Statement',
+      desc: 'What does your music help people feel or do?',
+      done: !!(profile?.creatorStatement && profile.creatorStatement.trim().length > 15),
+      pts: 10,
+      href: '/creator/onboarding',
+    },
+    {
+      key: 'aitools',
+      label: 'AI Tools Declared',
+      desc: 'Declare your creative stack — transparency earns listener trust',
+      done: !!(profile?.aiToolsUsed && profile.aiToolsUsed.length > 0),
+      pts: 5,
+      href: '/creator/onboarding',
+    },
+    {
+      key: 'genres',
+      label: 'Genres Selected',
+      desc: 'Help listeners discover your sound on Explore',
+      done: !!(profile?.genres && profile.genres.length > 0),
+      pts: 5,
+      href: '/creator/onboarding',
+    },
+    {
+      key: 'banner',
+      label: 'Banner image',
+      desc: 'Give your profile page a distinctive look',
+      done: !!profile?.bannerUrl,
+      pts: 0,
+      bonus: true,
+      href: '/creator/onboarding',
+    },
+  ];
+
+  const scoredItems = items.filter(i => !i.bonus);
+  const earnedPts = scoredItems.filter(i => i.done).reduce((s, i) => s + i.pts, 0);
+  const maxPts = scoredItems.reduce((s, i) => s + i.pts, 0);
+  const pct = Math.round((earnedPts / maxPts) * 100);
+
+  // Track disclosure avg
+  const tracks: any[] = tracksData?.tracks ?? [];
+  const avgDisclosure =
+    tracks.length === 0
+      ? null
+      : Math.round(
+          tracks.reduce((sum: number, t: any) => {
+            let score = 0;
+            if (t.aiInvolvementType?.trim()) score += 20;
+            if (t.rightsConfirmation && Object.keys(t.rightsConfirmation).length > 0) score += 20;
+            if (t.soulStory && t.soulStory.trim().length > 15) score += 20;
+            return sum + score;
+          }, 0) / tracks.length
+        );
+
+  const profileAllDone = earnedPts === maxPts;
+  const disclosureAllDone = avgDisclosure !== null && avgDisclosure >= 60;
+  const bannerDone = !!profile?.bannerUrl;
+  const tracksExist = tracks.length > 0;
+
+  if (profileAllDone && (disclosureAllDone || (!tracksExist && !isTracksLoading)) && bannerDone) return null;
+
+  const barColor =
+    pct >= 80
+      ? 'from-green-500 to-emerald-400'
+      : pct >= 50
+      ? 'from-violet-500 to-primary'
+      : 'from-amber-500 to-amber-400';
+  const pctColor =
+    pct >= 80 ? 'text-green-400' : pct >= 50 ? 'text-violet-400' : 'text-amber-400';
+
+  const missingCount = items.filter(i => !i.done).length;
+
+  return (
+    <div className="rounded-2xl border border-white/8 bg-card/30 overflow-hidden">
+
+      {/* Header row */}
+      <div className="flex items-start justify-between px-6 py-5 gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-0.5">
+            <h3 className="font-semibold text-base">Profile Completion</h3>
+            {missingCount > 0 && (
+              <span className="text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                {missingCount} to-do
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">A complete profile earns more listener trust and a higher Trust Score</p>
+        </div>
+        <div className="text-right flex-shrink-0">
+          <span className={`text-2xl font-black tabular-nums leading-none ${pctColor}`}>{pct}%</span>
+          <p className="text-[10px] text-muted-foreground mt-0.5">{earnedPts}/{maxPts} pts</p>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="px-6 pb-5">
+        <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+          <div
+            className={`h-full bg-gradient-to-r ${barColor} rounded-full transition-all duration-700 ease-out`}
+            style={{ width: mounted ? `${pct}%` : '0%' }}
+          />
+        </div>
+        <div className="flex justify-between mt-1.5 text-[10px] text-muted-foreground/40">
+          <span>Profile completeness</span>
+          {maxPts - earnedPts > 0 && <span>+{maxPts - earnedPts} pts available</span>}
+        </div>
+      </div>
+
+      {/* Items */}
+      <div className="border-t border-white/5 divide-y divide-white/5">
+        {items.map(item => (
+          <div
+            key={item.key}
+            className={`flex items-center gap-4 px-6 py-3.5 transition-colors ${
+              item.done ? 'opacity-40' : 'hover:bg-white/2'
+            }`}
+          >
+            {/* Status dot / checkmark */}
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                item.done
+                  ? 'bg-green-500/15 text-green-400'
+                  : item.bonus
+                  ? 'bg-amber-500/10 text-amber-400/40'
+                  : 'bg-violet-500/10 text-violet-400/50'
+              }`}
+            >
+              {item.done ? (
+                <Check className="h-3.5 w-3.5" />
+              ) : (
+                <div className="w-2 h-2 rounded-full bg-current" />
+              )}
+            </div>
+
+            {/* Label + desc */}
+            <div className="flex-1 min-w-0">
+              <p className={`text-sm font-medium leading-tight ${item.done ? '' : 'text-foreground'}`}>{item.label}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{item.desc}</p>
+            </div>
+
+            {/* Points badge */}
+            {item.bonus ? (
+              !item.done && (
+                <span className="text-[10px] font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full flex-shrink-0">
+                  Bonus
+                </span>
+              )
+            ) : (
+              <span className={`text-xs font-bold tabular-nums flex-shrink-0 ${item.done ? 'text-green-400' : 'text-muted-foreground/40'}`}>
+                +{item.pts}
+              </span>
+            )}
+
+            {/* Action link */}
+            {!item.done && (
+              <Link
+                href={item.href}
+                className="text-xs font-medium text-violet-400 hover:text-violet-300 flex items-center gap-1 flex-shrink-0 transition-colors"
+              >
+                Add <ArrowRight className="h-3 w-3" />
+              </Link>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Track disclosure footer */}
+      {!isTracksLoading && (
+        <>
+          {tracks.length === 0 ? (
+            <div className="px-6 py-4 bg-violet-500/5 border-t border-violet-500/10 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-violet-300/80">Upload your first track</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Track disclosure quality makes up 60 of your 100 Trust Score points</p>
+              </div>
+              <Link
+                href="/creator/upload"
+                className="text-xs font-medium text-violet-400 hover:text-violet-300 flex items-center gap-1 flex-shrink-0 transition-colors"
+              >
+                Upload <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+          ) : avgDisclosure !== null && avgDisclosure < 60 ? (
+            <div className="px-6 py-4 bg-amber-500/5 border-t border-amber-500/10">
+              <div className="flex items-center justify-between gap-4 mb-3">
+                <div>
+                  <p className="text-sm font-medium text-amber-300/90">Track Disclosure Average</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {avgDisclosure}/60 pts avg — add AI type, rights + Soul Story to each track
+                  </p>
+                </div>
+                <Link
+                  href="/creator/upload"
+                  className="text-xs font-medium text-amber-400 hover:text-amber-300 flex items-center gap-1 flex-shrink-0 transition-colors"
+                >
+                  Improve <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
+              <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-amber-500/60 rounded-full transition-all duration-700 ease-out"
+                  style={{ width: mounted ? `${Math.round((avgDisclosure / 60) * 100)}%` : '0%' }}
+                />
+              </div>
+            </div>
+          ) : null}
+        </>
       )}
     </div>
   );
