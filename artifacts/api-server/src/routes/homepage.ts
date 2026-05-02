@@ -13,6 +13,7 @@ const APPROVED_PUBLIC = [
 function fmt(t: any, c: any) {
   return {
     id: t.id, title: t.title, slug: t.slug,
+    audioUrl: t.audioUrl,
     coverImageUrl: t.coverImageUrl, genre: t.genre,
     moodTags: t.moodTags, soulStory: t.soulStory,
     aiInvolvementType: t.aiInvolvementType,

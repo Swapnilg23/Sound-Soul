@@ -17,7 +17,8 @@ A trust-first identity, publishing, and fan-growth platform for AI-assisted musi
 1. **Creator Profiles** — Artist identity with banner, avatar, bio, AI tools used, creator statement, genres, mood tags
 2. **Track Publishing** — Upload with Trust Profile: AI involvement disclosure, rights confirmation checklist, Soul Story
 3. **Trust Card** — Displayed on every track: AI involvement type, human contribution details. Legal disclaimer on every card.
-4. **Emotional Explore** — Curated sections: Featured, Calm Right Now, Hopeful Sounds, Cinematic AI, Hidden Gems, Focus & Flow
+4. **Emotional Explore** — Four discovery sections: Soul in Focus (creator spotlight), Today's Soul Pick (top track), Daily Drops (horizontal scroll of latest), Weekly Wave (ranked charts). Plus curated sections: Featured, Calm Right Now, Hopeful Sounds, Cinematic AI, Hidden Gems, Focus & Flow
+4a. **Mini Audio Player** — Persistent bottom bar: cover art, title, artist, play/pause, scrubber with seek, volume slider, mute, dismiss. Appears on any play button click, persists across navigation. Context: `src/lib/audio-player.tsx`, Component: `src/components/MiniPlayer.tsx`
 5. **Fan Email Capture** — Fans can subscribe to creators per-track or on profile pages
 6. **Interactions** — Likes, saves, follows (auth required)
 7. **Creator Dashboard** — Stats: plays, likes, fans, tracks. Track management.

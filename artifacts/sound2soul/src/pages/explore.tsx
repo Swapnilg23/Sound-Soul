@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Play, Repeat2, Sparkles, Users, ArrowRight, Music2, Flame } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { useAuth } from '@/lib/auth';
+import { useAudioPlayer } from '@/lib/audio-player';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -24,6 +25,7 @@ interface HomepageData {
 
 interface HomepageTrack {
   id: string; title: string; slug: string;
+  audioUrl: string | null;
   coverImageUrl: string | null; genre: string | null;
   moodTags: string[] | null; soulStory: string | null;
   aiInvolvementType: string | null;
@@ -268,6 +270,24 @@ export default function Explore() {
 
 function SoulInFocus({ creator }: { creator: NonNullable<HomepageData['spotlight']> }) {
   const initials = creator.artistName.slice(0, 2).toUpperCase();
+  const { play, currentTrack, isPlaying } = useAudioPlayer();
+
+  const handleTopTrackPlay = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!creator.topTrack) return;
+    play({
+      id: creator.topTrack.id,
+      title: creator.topTrack.title,
+      slug: creator.topTrack.slug,
+      audioUrl: creator.topTrack.audioUrl ?? null,
+      coverImageUrl: creator.topTrack.coverImageUrl ?? null,
+      creator: { artistName: creator.artistName, slug: creator.slug, avatarUrl: creator.avatarUrl },
+    });
+  };
+
+  const topIsLoaded = currentTrack?.id === creator.topTrack?.id;
+  const topIsPlaying = topIsLoaded && isPlaying;
 
   return (
     <section className="px-6 lg:px-10 max-w-7xl mx-auto">
@@ -333,24 +353,27 @@ function SoulInFocus({ creator }: { creator: NonNullable<HomepageData['spotlight
 
           {/* Right: Top track preview */}
           {creator.topTrack && (
-            <Link href={`/track/${creator.topTrack.slug}`} className="flex-shrink-0 hidden md:block">
-              <div className="group bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-3 flex items-center gap-3 w-72 hover:bg-black/60 transition-all duration-200 cursor-pointer hover:border-white/20">
+            <button onClick={handleTopTrackPlay} className="flex-shrink-0 hidden md:block text-left">
+              <div className={`group bg-black/40 backdrop-blur-md border rounded-2xl p-3 flex items-center gap-3 w-72 hover:bg-black/60 transition-all duration-200 cursor-pointer ${topIsLoaded ? 'border-primary/40' : 'border-white/10 hover:border-white/20'}`}>
                 <div className="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
                   {creator.topTrack.coverImageUrl
                     ? <img src={creator.topTrack.coverImageUrl} alt={creator.topTrack.title} className="w-full h-full object-cover" />
                     : <div className="w-full h-full bg-primary/30 flex items-center justify-center text-primary/60"><Music2 className="w-5 h-5" /></div>
                   }
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <Play className="w-4 h-4 text-white ml-0.5" fill="white" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    {topIsPlaying
+                      ? <span className="flex gap-[3px] items-end h-5">{[1,2,3].map(i=><span key={i} className="w-[3px] bg-white rounded-full animate-pulse" style={{height:`${40+i*20}%`,animationDelay:`${i*0.15}s`}}/>)}</span>
+                      : <Play className="w-4 h-4 text-white ml-0.5" fill="white" />
+                    }
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] text-white/40 uppercase tracking-wider mb-0.5">Top Track</p>
-                  <p className="text-sm font-semibold text-white truncate">{creator.topTrack.title}</p>
+                  <p className={`text-sm font-semibold truncate ${topIsLoaded ? 'text-primary' : 'text-white'}`}>{creator.topTrack.title}</p>
                   <p className="text-xs text-white/50">{(creator.topTrack.playCount || 0).toLocaleString()} plays</p>
                 </div>
               </div>
-            </Link>
+            </button>
           )}
         </div>
       </div>
@@ -361,16 +384,30 @@ function SoulInFocus({ creator }: { creator: NonNullable<HomepageData['spotlight
 // ── Today's Soul Pick ─────────────────────────────────────────────────────────
 
 function TodaysSoulPick({ track }: { track: HomepageTrack }) {
+  const { play, currentTrack, isPlaying } = useAudioPlayer();
+  const isLoaded = currentTrack?.id === track.id;
+  const isCurrentlyPlaying = isLoaded && isPlaying;
+
+  const handlePlay = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    play({
+      id: track.id, title: track.title, slug: track.slug,
+      audioUrl: track.audioUrl ?? null,
+      coverImageUrl: track.coverImageUrl ?? null,
+      creator: track.creator ? { artistName: track.creator.artistName, slug: track.creator.slug, avatarUrl: track.creator.avatarUrl ?? null } : null,
+    });
+  };
+
   return (
     <section className="px-6 lg:px-10 max-w-7xl mx-auto">
-      <Link href={`/track/${track.slug}`}>
-        <div className="group relative rounded-3xl overflow-hidden bg-card/60 border border-white/8 hover:border-secondary/30 transition-all duration-300 cursor-pointer">
+      <div className={`group relative rounded-3xl overflow-hidden bg-card/60 border transition-all duration-300 ${isLoaded ? 'border-secondary/40' : 'border-white/8 hover:border-secondary/30'}`}>
           {/* Amber left accent */}
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-secondary via-secondary/60 to-transparent rounded-l-3xl" />
 
           <div className="flex flex-col sm:flex-row items-stretch gap-0">
-            {/* Cover art */}
-            <div className="relative sm:w-52 sm:h-52 h-48 flex-shrink-0 overflow-hidden">
+            {/* Cover art — clicking plays; card title area navigates */}
+            <button onClick={handlePlay} className="relative sm:w-52 sm:h-52 h-48 flex-shrink-0 overflow-hidden cursor-pointer text-left">
               {track.coverImageUrl ? (
                 <img
                   src={track.coverImageUrl}
@@ -384,10 +421,13 @@ function TodaysSoulPick({ track }: { track: HomepageTrack }) {
               )}
               <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-2xl scale-90 group-hover:scale-100 transition-transform duration-200">
-                  <Play className="w-6 h-6 text-background ml-1" fill="currentColor" />
+                  {isCurrentlyPlaying
+                    ? <span className="flex gap-1 items-end h-6">{[1,2,3].map(i=><span key={i} className="w-1 bg-background rounded-full animate-pulse" style={{height:`${40+i*20}%`,animationDelay:`${i*0.15}s`}}/>)}</span>
+                    : <Play className="w-6 h-6 text-background ml-1" fill="currentColor" />
+                  }
                 </div>
               </div>
-            </div>
+            </button>
 
             {/* Info */}
             <div className="flex flex-col justify-center p-6 sm:p-8 gap-3 flex-1 min-w-0">
@@ -443,7 +483,6 @@ function TodaysSoulPick({ track }: { track: HomepageTrack }) {
             </div>
           </div>
         </div>
-      </Link>
     </section>
   );
 }
@@ -620,10 +659,30 @@ function ScrollSection({ title, tracks }: { title: string; tracks: any[] }) {
 }
 
 function TrackCard({ track }: { track: any }) {
-  const [hovered, setHovered] = useState(false);
+  const { play, currentTrack, isPlaying } = useAudioPlayer();
+  const isCurrentlyPlaying = currentTrack?.id === track.id && isPlaying;
+  const isLoaded = currentTrack?.id === track.id;
+
+  const handlePlay = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    play({
+      id: track.id,
+      title: track.title,
+      slug: track.slug,
+      audioUrl: track.audioUrl ?? null,
+      coverImageUrl: track.coverImageUrl ?? null,
+      creator: track.creator ? {
+        artistName: track.creator.artistName,
+        slug: track.creator.slug,
+        avatarUrl: track.creator.avatarUrl ?? null,
+      } : null,
+    });
+  };
+
   return (
     <Link href={`/track/${track.slug}`}>
-      <div className="group cursor-pointer" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+      <div className="group cursor-pointer">
         <div className="relative rounded-2xl overflow-hidden aspect-square bg-card mb-3">
           {track.coverImageUrl
             ? <img src={track.coverImageUrl} alt={track.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
@@ -631,14 +690,30 @@ function TrackCard({ track }: { track: any }) {
                 <Music2 className="w-10 h-10 text-primary/30" />
               </div>
           }
-          <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200 ${hovered ? 'opacity-100' : 'opacity-0'}`}>
-            <div className="w-11 h-11 rounded-full bg-foreground flex items-center justify-center shadow-xl transform transition-transform duration-200 scale-90 group-hover:scale-100">
-              <Play className="w-5 h-5 text-background ml-0.5" fill="currentColor" />
-            </div>
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <button
+              onClick={handlePlay}
+              className={`w-11 h-11 rounded-full flex items-center justify-center shadow-xl transform transition-all duration-200 scale-90 group-hover:scale-100 ${isLoaded ? 'bg-primary text-white' : 'bg-foreground text-background'}`}
+            >
+              {isCurrentlyPlaying
+                ? <span className="flex gap-[3px] items-end h-4">
+                    {[1,2,3].map(i => <span key={i} className="w-[3px] bg-white rounded-full animate-pulse" style={{ height: `${50 + i * 16}%`, animationDelay: `${i*0.15}s` }} />)}
+                  </span>
+                : <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
+              }
+            </button>
           </div>
+          {isLoaded && (
+            <div className="absolute bottom-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow">
+              {isCurrentlyPlaying
+                ? <span className="flex gap-px items-end h-2.5">{[1,2].map(i=><span key={i} className="w-[2px] bg-white rounded-full animate-pulse" style={{height:`${50+i*30}%`}}/>)}</span>
+                : <Play className="w-2 h-2 text-white ml-px" fill="currentColor" />
+              }
+            </div>
+          )}
         </div>
         <div className="space-y-0.5 px-0.5">
-          <p className="text-sm font-semibold truncate leading-tight">{track.title}</p>
+          <p className={`text-sm font-semibold truncate leading-tight ${isLoaded ? 'text-primary' : ''}`}>{track.title}</p>
           <p className="text-xs text-muted-foreground truncate">{track.creator?.artistName || 'Unknown Artist'}</p>
         </div>
       </div>
