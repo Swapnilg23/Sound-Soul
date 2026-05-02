@@ -15,12 +15,18 @@ interface AudioPlayerContextType {
   currentTime: number;
   duration: number;
   volume: number;
+  queue: PlayerTrack[];
+  queueIndex: number;
   play: (track: PlayerTrack) => void;
   pause: () => void;
   resume: () => void;
   seek: (seconds: number) => void;
   setVolume: (v: number) => void;
   dismiss: () => void;
+  setQueue: (tracks: PlayerTrack[], startAt?: number) => void;
+  addToQueue: (track: PlayerTrack) => void;
+  nextTrack: () => void;
+  prevTrack: () => void;
 }
 
 const AudioPlayerContext = createContext<AudioPlayerContextType | null>(null);
@@ -32,7 +38,28 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(0.8);
+  const [queue, setQueueState] = useState<PlayerTrack[]>([]);
+  const [queueIndex, setQueueIndex] = useState(-1);
+
   const currentTrackRef = useRef<PlayerTrack | null>(null);
+  const queueRef = useRef<PlayerTrack[]>([]);
+  const queueIndexRef = useRef(-1);
+
+  // Internal: load a track into the audio element and play
+  const loadAndPlay = useCallback((track: PlayerTrack) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    currentTrackRef.current = track;
+    setCurrentTrack(track);
+    setCurrentTime(0);
+    setDuration(0);
+    if (track.audioUrl) {
+      audio.src = track.audioUrl;
+      audio.load();
+      audio.play().catch(() => {});
+      fetch(`/api/tracks/${track.slug}/play`, { method: 'POST' }).catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     const audio = new Audio();
@@ -41,9 +68,18 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
     const onTimeUpdate = () => setCurrentTime(audio.currentTime);
     const onDuration = () => setDuration(isFinite(audio.duration) ? audio.duration : 0);
-    const onEnded = () => setIsPlaying(false);
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
+    const onEnded = () => {
+      setIsPlaying(false);
+      const nextIdx = queueIndexRef.current + 1;
+      if (nextIdx < queueRef.current.length) {
+        const next = queueRef.current[nextIdx];
+        queueIndexRef.current = nextIdx;
+        setQueueIndex(nextIdx);
+        loadAndPlay(next);
+      }
+    };
 
     audio.addEventListener('timeupdate', onTimeUpdate);
     audio.addEventListener('durationchange', onDuration);
@@ -60,30 +96,78 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       audio.pause();
       audio.src = '';
     };
-  }, []);
+  }, [loadAndPlay]);
 
   const play = useCallback((track: PlayerTrack) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
+    // Toggle if same track
     if (currentTrackRef.current?.id === track.id) {
+      const audio = audioRef.current;
+      if (!audio) return;
       if (audio.paused) audio.play().catch(() => {});
       else audio.pause();
       return;
     }
-
-    currentTrackRef.current = track;
-    setCurrentTrack(track);
-    setCurrentTime(0);
-    setDuration(0);
-
-    if (track.audioUrl) {
-      audio.src = track.audioUrl;
-      audio.load();
-      audio.play().catch(() => {});
-      fetch(`/api/tracks/${track.slug}/play`, { method: 'POST' }).catch(() => {});
+    // Check if track is already in queue
+    const existingIdx = queueRef.current.findIndex(t => t.id === track.id);
+    if (existingIdx >= 0) {
+      queueIndexRef.current = existingIdx;
+      setQueueIndex(existingIdx);
+    } else {
+      // Single-track queue
+      const newQueue = [track];
+      queueRef.current = newQueue;
+      queueIndexRef.current = 0;
+      setQueueState(newQueue);
+      setQueueIndex(0);
     }
-  }, []);
+    loadAndPlay(track);
+  }, [loadAndPlay]);
+
+  const setQueue = useCallback((tracks: PlayerTrack[], startAt = 0) => {
+    queueRef.current = tracks;
+    queueIndexRef.current = startAt;
+    setQueueState(tracks);
+    setQueueIndex(startAt);
+    if (tracks[startAt]) loadAndPlay(tracks[startAt]);
+  }, [loadAndPlay]);
+
+  const addToQueue = useCallback((track: PlayerTrack) => {
+    const newQueue = [...queueRef.current, track];
+    queueRef.current = newQueue;
+    setQueueState(newQueue);
+    // If nothing is playing, start this track
+    if (!currentTrackRef.current) {
+      queueIndexRef.current = newQueue.length - 1;
+      setQueueIndex(newQueue.length - 1);
+      loadAndPlay(track);
+    }
+  }, [loadAndPlay]);
+
+  const nextTrack = useCallback(() => {
+    const nextIdx = queueIndexRef.current + 1;
+    if (nextIdx < queueRef.current.length) {
+      queueIndexRef.current = nextIdx;
+      setQueueIndex(nextIdx);
+      loadAndPlay(queueRef.current[nextIdx]);
+    }
+  }, [loadAndPlay]);
+
+  const prevTrack = useCallback(() => {
+    const audio = audioRef.current;
+    // If > 3s in, restart current
+    if (audio && audio.currentTime > 3) {
+      audio.currentTime = 0;
+      return;
+    }
+    const prevIdx = queueIndexRef.current - 1;
+    if (prevIdx >= 0) {
+      queueIndexRef.current = prevIdx;
+      setQueueIndex(prevIdx);
+      loadAndPlay(queueRef.current[prevIdx]);
+    } else if (audio) {
+      audio.currentTime = 0;
+    }
+  }, [loadAndPlay]);
 
   const pause = useCallback(() => { audioRef.current?.pause(); }, []);
   const resume = useCallback(() => { audioRef.current?.play().catch(() => {}); }, []);
@@ -101,16 +185,22 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     const audio = audioRef.current;
     if (audio) { audio.pause(); audio.src = ''; }
     currentTrackRef.current = null;
+    queueRef.current = [];
+    queueIndexRef.current = -1;
     setCurrentTrack(null);
     setIsPlaying(false);
     setCurrentTime(0);
     setDuration(0);
+    setQueueState([]);
+    setQueueIndex(-1);
   }, []);
 
   return (
     <AudioPlayerContext.Provider value={{
       currentTrack, isPlaying, currentTime, duration, volume,
+      queue, queueIndex,
       play, pause, resume, seek, setVolume, dismiss,
+      setQueue, addToQueue, nextTrack, prevTrack,
     }}>
       {children}
     </AudioPlayerContext.Provider>

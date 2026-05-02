@@ -3,7 +3,10 @@ import { useGetLibrary } from '@workspace/api-client-react';
 import { Link } from 'wouter';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Repeat2 } from 'lucide-react';
+import { Repeat2, Play } from 'lucide-react';
+import { AdBanner } from '@/components/AdBanner';
+import { useAuth } from '@/lib/auth';
+import { useAudioPlayer } from '@/lib/audio-player';
 
 type Tab = 'saved' | 'liked' | 'reposts' | 'following';
 
@@ -12,8 +15,9 @@ interface Track {
   title: string;
   slug: string;
   coverImageUrl: string | null;
+  audioUrl?: string | null;
   genre: string | null;
-  creator: { artistName: string } | null;
+  creator: { artistName: string; slug: string; avatarUrl?: string | null } | null;
   repostedAt?: string;
 }
 
@@ -28,6 +32,7 @@ async function apiFetch(path: string) {
 
 export default function Library() {
   const { data: library, isLoading } = useGetLibrary();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('saved');
   const [reposts, setReposts] = useState<Track[]>([]);
   const [repostsLoading, setRepostsLoading] = useState(false);
@@ -48,14 +53,21 @@ export default function Library() {
     { id: 'following', label: 'Following', count: library?.followedCreators.length },
   ];
 
+  const showUpgradePrompt = user && user.role !== 'creator' && user.role !== 'admin';
+
   return (
-    <div className="min-h-[calc(100vh-4rem)] p-4 md:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="min-h-[calc(100vh-4rem)] p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+
+      {/* Header */}
       <div>
         <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
           Your Library
         </h1>
         <p className="text-muted-foreground">Tracks you've saved, liked, reposted, and creators you follow.</p>
       </div>
+
+      {/* ── Listen Ad-Free upgrade banner (free listeners only) ── */}
+      {showUpgradePrompt && <AdBanner variant="library-upgrade" />}
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-white/8">
@@ -98,9 +110,20 @@ export default function Library() {
             library?.savedTracks.length === 0 ? (
               <EmptyState icon="🎵" message="You haven't saved any tracks yet." sub="Tap the bookmark on any track to save it here." linkText="Explore tracks" href="/explore" />
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {library?.savedTracks.map(track => <TrackCard key={track.id} track={track} />)}
-              </div>
+              <>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {library?.savedTracks.slice(0, 6).map((track: any) => <TrackCard key={track.id} track={track} />)}
+                </div>
+                {/* Mid-page ad after first 6 tracks */}
+                {(library?.savedTracks.length ?? 0) > 6 && showUpgradePrompt && (
+                  <AdBanner variant="library-mid" />
+                )}
+                {(library?.savedTracks.length ?? 0) > 6 && (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {library?.savedTracks.slice(6).map((track: any) => <TrackCard key={track.id} track={track} />)}
+                  </div>
+                )}
+              </>
             )
           )}
 
@@ -108,9 +131,19 @@ export default function Library() {
             library?.likedTracks.length === 0 ? (
               <EmptyState icon="♥" message="You haven't liked any tracks yet." sub="Tap the heart on any track to like it." linkText="Explore tracks" href="/explore" />
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {library?.likedTracks.map(track => <TrackCard key={track.id} track={track} />)}
-              </div>
+              <>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {library?.likedTracks.slice(0, 6).map((track: any) => <TrackCard key={track.id} track={track} />)}
+                </div>
+                {(library?.likedTracks.length ?? 0) > 6 && showUpgradePrompt && (
+                  <AdBanner variant="library-mid" />
+                )}
+                {(library?.likedTracks.length ?? 0) > 6 && (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {library?.likedTracks.slice(6).map((track: any) => <TrackCard key={track.id} track={track} />)}
+                  </div>
+                )}
+              </>
             )
           )}
 
@@ -143,6 +176,11 @@ export default function Library() {
               </div>
             )
           )}
+
+          {/* Bottom ad — always show for free listeners on non-empty tabs */}
+          {showUpgradePrompt && (
+            <AdBanner variant="library-mid" />
+          )}
         </>
       )}
     </div>
@@ -150,19 +188,48 @@ export default function Library() {
 }
 
 function TrackCard({ track, reposted }: { track: any; reposted?: boolean }) {
+  const { play, currentTrack, isPlaying } = useAudioPlayer();
+  const isLoaded = currentTrack?.id === track.id;
+  const isCurrentlyPlaying = isLoaded && isPlaying;
+
+  const handlePlay = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    play({
+      id: track.id, title: track.title, slug: track.slug,
+      audioUrl: track.audioUrl ?? null,
+      coverImageUrl: track.coverImageUrl ?? null,
+      creator: track.creator ? { artistName: track.creator.artistName, slug: track.creator.slug ?? track.slug, avatarUrl: track.creator.avatarUrl ?? null } : null,
+    });
+  };
+
   return (
     <Link href={`/track/${track.slug}`}>
-      <Card className="bg-card/40 hover:bg-card/80 border-white/5 transition-colors cursor-pointer group">
+      <Card className={`border-white/5 transition-all cursor-pointer group ${isLoaded ? 'bg-primary/5 border-primary/20' : 'bg-card/40 hover:bg-card/80'}`}>
         <CardContent className="p-4 flex items-center gap-4">
-          <div className="w-16 h-16 bg-muted rounded-xl flex-shrink-0 overflow-hidden">
+          <div className="relative w-16 h-16 bg-muted rounded-xl flex-shrink-0 overflow-hidden">
             {track.coverImageUrl ? (
               <img src={track.coverImageUrl} alt={track.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
             ) : (
               <div className="w-full h-full bg-primary/20 flex items-center justify-center text-xl text-primary/40">♫</div>
             )}
+            {/* Play button overlay */}
+            <button
+              onClick={handlePlay}
+              className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
+                isLoaded ? 'bg-black/20' : 'bg-black/0 group-hover:bg-black/40 opacity-0 group-hover:opacity-100'
+              }`}
+            >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-lg ${isLoaded ? 'bg-primary' : 'bg-white/90'}`}>
+                {isCurrentlyPlaying
+                  ? <span className="flex gap-[2px] items-end h-3">{[1,2,3].map(i=><span key={i} className="w-[2px] bg-white rounded-full animate-pulse" style={{height:`${40+i*20}%`,animationDelay:`${i*0.15}s`}}/>)}</span>
+                  : <Play className={`w-3.5 h-3.5 ml-0.5 ${isLoaded ? 'text-white' : 'text-background'}`} fill="currentColor" />
+                }
+              </div>
+            </button>
           </div>
           <div className="flex-grow min-w-0">
-            <h3 className="font-semibold text-base truncate group-hover:text-primary transition-colors">{track.title}</h3>
+            <h3 className={`font-semibold text-base truncate transition-colors ${isLoaded ? 'text-primary' : 'group-hover:text-primary'}`}>{track.title}</h3>
             <p className="text-sm text-muted-foreground truncate mt-0.5">{track.creator?.artistName || 'Unknown Artist'}</p>
             {reposted && (
               <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400/70 mt-1">

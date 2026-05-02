@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Play, Repeat2, Sparkles, Users, ArrowRight, Music2, Flame } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
 import { useAuth } from '@/lib/auth';
-import { useAudioPlayer } from '@/lib/audio-player';
+import { useAudioPlayer, PlayerTrack } from '@/lib/audio-player';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -489,8 +489,37 @@ function TodaysSoulPick({ track }: { track: HomepageTrack }) {
 
 // ── Weekly Wave ────────────────────────────────────────────────────────────────
 
+function toPlayerTrack(track: HomepageTrack): PlayerTrack {
+  return {
+    id: track.id, title: track.title, slug: track.slug,
+    audioUrl: track.audioUrl ?? null,
+    coverImageUrl: track.coverImageUrl ?? null,
+    creator: track.creator ? { artistName: track.creator.artistName, slug: track.creator.slug, avatarUrl: track.creator.avatarUrl ?? null } : null,
+  };
+}
+
 function WeeklyWave({ tracks }: { tracks: HomepageTrack[] }) {
   const maxPlays = tracks[0]?.playCount ?? 1;
+  const { play, addToQueue, setQueue, currentTrack, isPlaying } = useAudioPlayer();
+  const [queuedIds, setQueuedIds] = useState<Set<string>>(new Set());
+
+  const handleQueueAll = () => {
+    setQueue(tracks.map(toPlayerTrack), 0);
+    setQueuedIds(new Set(tracks.map(t => t.id)));
+  };
+
+  const handleAddToQueue = (e: React.MouseEvent, track: HomepageTrack) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToQueue(toPlayerTrack(track));
+    setQueuedIds(prev => new Set([...prev, track.id]));
+  };
+
+  const handlePlay = (e: React.MouseEvent, track: HomepageTrack) => {
+    e.preventDefault();
+    e.stopPropagation();
+    play(toPlayerTrack(track));
+  };
 
   return (
     <section className="px-6 lg:px-10 max-w-7xl mx-auto">
@@ -500,26 +529,52 @@ function WeeklyWave({ tracks }: { tracks: HomepageTrack[] }) {
           title="The Weekly Wave"
           titleIcon={<span className="text-2xl leading-none">〜</span>}
           action={
-            <Link href="/leaderboard" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
-              Full charts <ArrowRight className="w-3 h-3" />
-            </Link>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleQueueAll}
+                className="flex items-center gap-1.5 text-xs font-semibold text-secondary hover:text-secondary/80 transition-colors bg-secondary/10 hover:bg-secondary/15 px-3 py-1.5 rounded-full border border-secondary/20"
+              >
+                <Play className="w-3 h-3" fill="currentColor" />
+                Queue Wave
+              </button>
+              <Link href="/leaderboard" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
+                Full charts <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
           }
         />
       </div>
 
-      <div className="grid md:grid-cols-2 gap-2">
+      <div className="grid md:grid-cols-2 gap-1">
         {tracks.map((track, i) => {
           const rankColors = ['text-secondary', 'text-secondary/70', 'text-muted-foreground/70'];
           const rankColor = rankColors[Math.min(i, rankColors.length - 1)];
           const barWidth = Math.round((track.playCount / maxPlays) * 100);
+          const isLoaded = currentTrack?.id === track.id;
+          const isCurrentlyPlaying = isLoaded && isPlaying;
+          const isQueued = queuedIds.has(track.id);
 
           return (
             <Link key={track.id} href={`/track/${track.slug}`}>
-              <div className="group flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-white/5 transition-colors cursor-pointer border border-transparent hover:border-white/8">
-                {/* Rank */}
-                <span className={`w-6 text-center text-sm font-bold tabular-nums ${rankColor} flex-shrink-0`}>
-                  {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : String(i + 1).padStart(2, '0')}
-                </span>
+              <div className={`group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all cursor-pointer border ${isLoaded ? 'bg-primary/5 border-primary/15' : 'border-transparent hover:bg-white/5 hover:border-white/8'}`}>
+                {/* Rank / Play indicator */}
+                <div className="w-6 flex-shrink-0 flex items-center justify-center">
+                  {isLoaded ? (
+                    <button onClick={(e) => handlePlay(e, track)} className="text-primary">
+                      {isCurrentlyPlaying
+                        ? <span className="flex gap-[2px] items-end h-4">{[1,2,3].map(j=><span key={j} className="w-[3px] bg-primary rounded-full animate-pulse" style={{height:`${40+j*20}%`,animationDelay:`${j*0.12}s`}}/>)}</span>
+                        : <Play className="w-3.5 h-3.5" fill="currentColor" />
+                      }
+                    </button>
+                  ) : (
+                    <button onClick={(e) => handlePlay(e, track)} className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary">
+                      <Play className="w-3.5 h-3.5" fill="currentColor" />
+                    </button>
+                  )}
+                  <span className={`text-sm font-bold tabular-nums ${rankColor} group-hover:hidden ${isLoaded ? 'hidden' : ''}`}>
+                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : String(i + 1).padStart(2, '0')}
+                  </span>
+                </div>
 
                 {/* Cover */}
                 <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
@@ -532,23 +587,28 @@ function WeeklyWave({ tracks }: { tracks: HomepageTrack[] }) {
                 {/* Info + bar */}
                 <div className="flex-1 min-w-0 space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{track.title}</p>
+                    <p className={`text-sm font-semibold truncate transition-colors ${isLoaded ? 'text-primary' : 'group-hover:text-primary'}`}>{track.title}</p>
                     <span className="text-[11px] text-muted-foreground/50 tabular-nums shrink-0">{(track.playCount || 0).toLocaleString()}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <p className="text-xs text-muted-foreground truncate">{track.creator?.artistName}</p>
-                    {track.genre && (
-                      <span className="text-[10px] text-muted-foreground/40 shrink-0">· {track.genre}</span>
-                    )}
+                    {track.genre && <span className="text-[10px] text-muted-foreground/40 shrink-0">· {track.genre}</span>}
                   </div>
-                  {/* Play count bar */}
                   <div className="h-0.5 w-full bg-white/5 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-primary/60 to-secondary/60 rounded-full transition-all duration-700"
-                      style={{ width: `${barWidth}%` }}
-                    />
+                    <div className="h-full bg-gradient-to-r from-primary/60 to-secondary/60 rounded-full transition-all duration-700" style={{ width: `${barWidth}%` }} />
                   </div>
                 </div>
+
+                {/* Add to queue button */}
+                <button
+                  onClick={(e) => handleAddToQueue(e, track)}
+                  title={isQueued ? 'In queue' : 'Add to queue'}
+                  className={`flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all p-1.5 rounded-lg ${isQueued ? 'text-secondary opacity-100' : 'text-muted-foreground/50 hover:text-secondary hover:bg-secondary/10'}`}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
               </div>
             </Link>
           );
