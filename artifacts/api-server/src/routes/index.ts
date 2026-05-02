@@ -20,6 +20,7 @@ import playlistsRouter from "./playlists";
 import historyRouter from "./history";
 import insightsRouter from "./insights";
 import soulStoriesRouter from "./soul-stories";
+import wrappedRouter from "./wrapped";
 
 const router: IRouter = Router();
 
@@ -44,5 +45,6 @@ router.use("/radio", radioRouter);
 router.use("/playlists", playlistsRouter);
 router.use("/history", historyRouter);
 router.use("/insights", insightsRouter);
+router.use("/wrapped", wrappedRouter);
 
 export default router;

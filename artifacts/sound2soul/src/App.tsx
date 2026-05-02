@@ -23,6 +23,7 @@ import Leaderboard from "@/pages/leaderboard";
 import AdminDashboard from "@/pages/admin";
 import SoulRadio from "@/pages/radio";
 import CollectionPage from "@/pages/collection";
+import SoulWrapped from "@/pages/creator/wrapped";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,9 @@ function Router() {
         </Route>
 
         {/* Creator Routes — specific paths MUST come before /creator/:slug wildcard */}
+        <Route path="/creator/wrapped">
+          {() => <ProtectedRoute component={SoulWrapped} role="creator" />}
+        </Route>
         <Route path="/creator/dashboard">
           {() => <ProtectedRoute component={CreatorDashboard} role="creator" />}
         </Route>

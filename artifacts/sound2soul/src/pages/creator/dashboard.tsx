@@ -10,7 +10,7 @@ import {
   Tooltip, ResponsiveContainer, Legend, RadarChart, PolarGrid,
   PolarAngleAxis, Radar, AreaChart, Area,
 } from 'recharts';
-import { MapPin, Flame, TrendingUp, Clock, Star } from 'lucide-react';
+import { MapPin, Flame, TrendingUp, Clock, Star, Sparkles } from 'lucide-react';
 
 type Tab = 'overview' | 'analytics' | 'insights';
 
@@ -94,9 +94,16 @@ export default function CreatorDashboard() {
           <h1 className="text-3xl font-bold">Creator Dashboard</h1>
           <p className="text-muted-foreground">Manage your tracks and monitor your growth.</p>
         </div>
-        <Button asChild className="bg-primary text-primary-foreground">
-          <Link href="/creator/upload">Upload Track</Link>
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button asChild variant="outline" className="gap-2 border-amber-500/30 text-amber-400 hover:border-amber-400/60 hover:bg-amber-500/10">
+            <Link href="/creator/wrapped">
+              <Sparkles className="h-4 w-4" /> Soul Wrapped
+            </Link>
+          </Button>
+          <Button asChild className="bg-primary text-primary-foreground">
+            <Link href="/creator/upload">Upload Track</Link>
+          </Button>
+        </div>
       </div>
 
       {/* Tabs */}
