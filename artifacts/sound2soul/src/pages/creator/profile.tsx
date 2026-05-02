@@ -13,6 +13,18 @@ import { Repeat2, Sparkles, Play } from 'lucide-react';
 
 type Tab = 'tracks' | 'activity';
 
+interface TopFan {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  profileSlug: string | null;
+  role: string;
+  likes: number;
+  saves: number;
+  comments: number;
+  score: number;
+}
+
 interface ActivityItem {
   type: 'release' | 'repost';
   sortDate: string;
@@ -48,6 +60,12 @@ async function fetchActivity(slug: string): Promise<ActivityItem[]> {
   return (await res.json()).activity ?? [];
 }
 
+async function fetchTopFans(slug: string): Promise<TopFan[]> {
+  const res = await fetch(`/api/creators/${slug}/top-fans`);
+  if (!res.ok) return [];
+  return (await res.json()).fans ?? [];
+}
+
 function formatTimeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const m = Math.floor(diff / 60000);
@@ -79,6 +97,8 @@ export default function CreatorProfile() {
   const [followLoading, setFollowLoading] = useState(false);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [activityLoading, setActivityLoading] = useState(false);
+  const [fans, setFans] = useState<TopFan[]>([]);
+  const [fansLoading, setFansLoading] = useState(false);
 
   const followMutation = useFollowCreator();
   const unfollowMutation = useUnfollowCreator();
@@ -93,6 +113,12 @@ export default function CreatorProfile() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id, user?.id]);
+
+  useEffect(() => {
+    if (!slug) return;
+    setFansLoading(true);
+    fetchTopFans(slug).then(setFans).finally(() => setFansLoading(false));
+  }, [slug]);
 
   useEffect(() => {
     if (!slug || activeTab !== 'activity') return;
@@ -279,6 +305,64 @@ export default function CreatorProfile() {
                 </div>
               )}
             </div>
+
+            {/* Top Fans */}
+            {(fansLoading || fans.length > 0) && (
+              <div className="pt-4 border-t border-white/8 space-y-3">
+                <h3 className="font-semibold text-xs uppercase tracking-widest text-muted-foreground pt-2">Top Fans</h3>
+                {fansLoading ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="flex items-center gap-2.5 animate-pulse">
+                        <div className="w-8 h-8 rounded-full bg-white/8 flex-shrink-0" />
+                        <div className="flex-1 h-3 rounded bg-white/8" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {fans.map((fan, i) => {
+                      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
+                      const initials = fan.displayName.slice(0, 2).toUpperCase();
+                      const engagementLabel = [
+                        fan.likes > 0 && `${fan.likes} ♥`,
+                        fan.saves > 0 && `${fan.saves} saved`,
+                        fan.comments > 0 && `${fan.comments} comments`,
+                      ].filter(Boolean).join(' · ');
+
+                      const inner = (
+                        <div className={`flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-colors ${
+                          fan.profileSlug ? 'hover:bg-white/5 cursor-pointer' : ''
+                        }`}>
+                          <div className="relative flex-shrink-0">
+                            <div className="w-8 h-8 rounded-full overflow-hidden bg-primary/20 flex items-center justify-center text-xs font-bold text-primary/60">
+                              {fan.avatarUrl
+                                ? <img src={fan.avatarUrl} alt={fan.displayName} className="w-full h-full object-cover" />
+                                : initials}
+                            </div>
+                            {medal && (
+                              <span className="absolute -top-1 -right-1 text-[10px] leading-none">{medal}</span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate leading-tight">{fan.displayName}</p>
+                            {engagementLabel && (
+                              <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">{engagementLabel}</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+
+                      return fan.profileSlug ? (
+                        <Link key={fan.userId} href={`/creator/${fan.profileSlug}`}>{inner}</Link>
+                      ) : (
+                        <div key={fan.userId}>{inner}</div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* ── Main content ────────────────────────────────────────────────── */}

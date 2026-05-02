@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { creatorProfilesTable, tracksTable, followsTable, repostsTable } from "@workspace/db";
-import { eq, and, count, desc } from "drizzle-orm";
+import { creatorProfilesTable, tracksTable, followsTable, repostsTable, likesTable, savesTable, commentsTable, usersTable } from "@workspace/db";
+import { eq, and, count, desc, inArray } from "drizzle-orm";
 import { requireAuth, requireCreator } from "../lib/auth";
 import { generateId, generateSlug } from "../lib/id";
 
@@ -175,6 +175,99 @@ router.get("/:slug/activity", async (req, res) => {
     .slice(0, 30);
 
   res.json({ activity: merged });
+});
+
+// Top Fans: users with the most engagement on this creator's tracks
+router.get("/:slug/top-fans", async (req, res) => {
+  const [profile] = await db.select().from(creatorProfilesTable)
+    .where(eq(creatorProfilesTable.slug, req.params.slug))
+    .limit(1);
+
+  if (!profile) return res.status(404).json({ error: "Creator not found" });
+
+  // Get all approved public track IDs for this creator
+  const creatorTracks = await db.select({ id: tracksTable.id })
+    .from(tracksTable)
+    .where(and(
+      eq(tracksTable.creatorId, profile.id),
+      eq(tracksTable.visibility, "public"),
+      eq(tracksTable.moderationStatus, "approved"),
+    ));
+
+  if (creatorTracks.length === 0) return res.json({ fans: [] });
+
+  const trackIds = creatorTracks.map(t => t.id);
+
+  // Count likes, saves, comments per user in parallel
+  const [likeCounts, saveCounts, commentCounts] = await Promise.all([
+    db.select({ userId: likesTable.userId, n: count() })
+      .from(likesTable)
+      .where(inArray(likesTable.trackId, trackIds))
+      .groupBy(likesTable.userId),
+    db.select({ userId: savesTable.userId, n: count() })
+      .from(savesTable)
+      .where(inArray(savesTable.trackId, trackIds))
+      .groupBy(savesTable.userId),
+    db.select({ userId: commentsTable.userId, n: count() })
+      .from(commentsTable)
+      .where(inArray(commentsTable.trackId, trackIds))
+      .groupBy(commentsTable.userId),
+  ]);
+
+  // Score: like=1pt, save=2pt, comment=3pt
+  const scores: Record<string, { likes: number; saves: number; comments: number; score: number }> = {};
+  for (const { userId, n } of likeCounts) {
+    if (!scores[userId]) scores[userId] = { likes: 0, saves: 0, comments: 0, score: 0 };
+    scores[userId].likes = Number(n);
+    scores[userId].score += Number(n) * 1;
+  }
+  for (const { userId, n } of saveCounts) {
+    if (!scores[userId]) scores[userId] = { likes: 0, saves: 0, comments: 0, score: 0 };
+    scores[userId].saves = Number(n);
+    scores[userId].score += Number(n) * 2;
+  }
+  for (const { userId, n } of commentCounts) {
+    if (!scores[userId]) scores[userId] = { likes: 0, saves: 0, comments: 0, score: 0 };
+    scores[userId].comments = Number(n);
+    scores[userId].score += Number(n) * 3;
+  }
+
+  // Exclude the creator themselves
+  delete scores[profile.userId];
+
+  const topUserIds = Object.entries(scores)
+    .sort((a, b) => b[1].score - a[1].score)
+    .slice(0, 8)
+    .map(([uid]) => uid);
+
+  if (topUserIds.length === 0) return res.json({ fans: [] });
+
+  // Fetch user info + optional creator profile
+  const [users, creatorProfiles] = await Promise.all([
+    db.select().from(usersTable).where(inArray(usersTable.id, topUserIds)),
+    db.select().from(creatorProfilesTable).where(inArray(creatorProfilesTable.userId, topUserIds)),
+  ]);
+
+  const profileByUserId = new Map(creatorProfiles.map(p => [p.userId, p]));
+
+  const fans = topUserIds.map(uid => {
+    const u = users.find(x => x.id === uid);
+    const cp = profileByUserId.get(uid);
+    const s = scores[uid];
+    return {
+      userId: uid,
+      displayName: cp?.artistName || u?.email?.split("@")[0] || "Listener",
+      avatarUrl: cp?.avatarUrl || null,
+      profileSlug: cp?.slug || null,
+      role: u?.role,
+      likes: s.likes,
+      saves: s.saves,
+      comments: s.comments,
+      score: s.score,
+    };
+  });
+
+  res.json({ fans });
 });
 
 function formatProfile(p: any) {
