@@ -3,20 +3,37 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Sound2Soul API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: creators
+    description: Creator profiles
+  - name: tracks
+    description: Track management
+  - name: explore
+    description: Public discovery
+  - name: interactions
+    description: Likes, saves, follows
+  - name: fan-emails
+    description: Fan email capture
+  - name: reports
+    description: Track reports
+  - name: waitlist
+    description: Pro waitlist
+  - name: admin
+    description: Admin operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +41,828 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # Auth
+  /auth/signup:
+    post:
+      operationId: signup
+      tags: [auth]
+      summary: Create a new account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserWithProfile"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # Creator profiles
+  /creators/onboarding:
+    post:
+      operationId: createCreatorProfile
+      tags: [creators]
+      summary: Create creator profile (onboarding)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCreatorProfileBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatorProfile"
+
+  /creators/me:
+    get:
+      operationId: getMyCreatorProfile
+      tags: [creators]
+      summary: Get own creator profile
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatorProfile"
+    patch:
+      operationId: updateCreatorProfile
+      tags: [creators]
+      summary: Update own creator profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCreatorProfileBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatorProfile"
+
+  /creators/{slug}:
+    get:
+      operationId: getCreatorBySlug
+      tags: [creators]
+      summary: Get public creator profile by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatorPublicProfile"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /creators/{slug}/tracks:
+    get:
+      operationId: getCreatorTracks
+      tags: [creators]
+      summary: Get public tracks by creator slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Track"
+
+  # Tracks
+  /tracks:
+    get:
+      operationId: getMyTracks
+      tags: [tracks]
+      summary: Get creator's own tracks
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Track"
+    post:
+      operationId: createTrack
+      tags: [tracks]
+      summary: Upload a new track
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTrackBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Track"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tracks/{slug}:
+    get:
+      operationId: getTrackBySlug
+      tags: [tracks]
+      summary: Get a public track by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateTrack
+      tags: [tracks]
+      summary: Update own track
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTrackBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Track"
+    delete:
+      operationId: deleteTrack
+      tags: [tracks]
+      summary: Delete own track
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /tracks/{slug}/play:
+    post:
+      operationId: incrementPlayCount
+      tags: [tracks]
+      summary: Increment play count
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  # Explore
+  /explore:
+    get:
+      operationId: exploreTracks
+      tags: [explore]
+      summary: Discover approved public tracks
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: mood
+          in: query
+          schema:
+            type: string
+        - name: genre
+          in: query
+          schema:
+            type: string
+        - name: aiInvolvement
+          in: query
+          schema:
+            type: string
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExploreResponse"
+
+  /explore/curated:
+    get:
+      operationId: getCuratedSections
+      tags: [explore]
+      summary: Get curated track sections for homepage
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CuratedSections"
+
+  # Dashboard
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [tracks]
+      summary: Get creator dashboard stats
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  # Interactions
+  /likes/{trackId}:
+    post:
+      operationId: likeTrack
+      tags: [interactions]
+      summary: Like a track
+      parameters:
+        - name: trackId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+    delete:
+      operationId: unlikeTrack
+      tags: [interactions]
+      summary: Unlike a track
+      parameters:
+        - name: trackId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /saves/{trackId}:
+    post:
+      operationId: saveTrack
+      tags: [interactions]
+      summary: Save a track
+      parameters:
+        - name: trackId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+    delete:
+      operationId: unsaveTrack
+      tags: [interactions]
+      summary: Unsave a track
+      parameters:
+        - name: trackId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /follows/{creatorId}:
+    post:
+      operationId: followCreator
+      tags: [interactions]
+      summary: Follow a creator
+      parameters:
+        - name: creatorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+    delete:
+      operationId: unfollowCreator
+      tags: [interactions]
+      summary: Unfollow a creator
+      parameters:
+        - name: creatorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /library:
+    get:
+      operationId: getLibrary
+      tags: [interactions]
+      summary: Get listener's saved/liked tracks and followed creators
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListenerLibrary"
+
+  /interactions/{trackId}:
+    get:
+      operationId: getTrackInteractions
+      tags: [interactions]
+      summary: Get current user's interaction state for a track
+      parameters:
+        - name: trackId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackInteractionState"
+
+  # Fan emails
+  /fan-emails:
+    post:
+      operationId: subscribeFanEmail
+      tags: [fan-emails]
+      summary: Subscribe to a creator's fan list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FanEmailBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /fan-emails/mine:
+    get:
+      operationId: getMyFanEmails
+      tags: [fan-emails]
+      summary: Get creator's fan email list
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FanEmailListResponse"
+
+  # Reports
+  /reports:
+    post:
+      operationId: reportTrack
+      tags: [reports]
+      summary: Report a track
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  # Waitlist
+  /waitlist:
+    post:
+      operationId: joinWaitlist
+      tags: [waitlist]
+      summary: Join Pro/Studio waitlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WaitlistBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  # Upload URLs
+  /upload/audio-url:
+    post:
+      operationId: getAudioUploadUrl
+      tags: [tracks]
+      summary: Get a pre-signed URL for audio upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+
+  /upload/image-url:
+    post:
+      operationId: getImageUploadUrl
+      tags: [tracks]
+      summary: Get a pre-signed URL for image upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+
+  # Admin
+  /admin/metrics:
+    get:
+      operationId: getAdminMetrics
+      tags: [admin]
+      summary: Get platform metrics
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminMetrics"
+
+  /admin/tracks:
+    get:
+      operationId: getAdminTracks
+      tags: [admin]
+      summary: Get all tracks for admin
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, approved, rejected]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminTrack"
+
+  /admin/tracks/{trackId}/approve:
+    post:
+      operationId: approveTrack
+      tags: [admin]
+      summary: Approve a track
+      parameters:
+        - name: trackId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /admin/tracks/{trackId}/reject:
+    post:
+      operationId: rejectTrack
+      tags: [admin]
+      summary: Reject a track
+      parameters:
+        - name: trackId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectTrackBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /admin/tracks/{trackId}/feature:
+    post:
+      operationId: featureTrack
+      tags: [admin]
+      summary: Feature or unfeature a track
+      parameters:
+        - name: trackId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeatureTrackBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /admin/tracks/{trackId}:
+    delete:
+      operationId: adminDeleteTrack
+      tags: [admin]
+      summary: Admin delete a track
+      parameters:
+        - name: trackId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /admin/reports:
+    get:
+      operationId: getAdminReports
+      tags: [admin]
+      summary: Get all reports
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, reviewed, resolved]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Report"
+
+  /admin/reports/{reportId}/resolve:
+    post:
+      operationId: resolveReport
+      tags: [admin]
+      summary: Resolve a report
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResolveReportBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /admin/users:
+    get:
+      operationId: getAdminUsers
+      tags: [admin]
+      summary: Get all users
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUser"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +870,707 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+
+    SignupBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [creator, listener]
+      required: [email, password, role]
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required: [email, password]
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+      required: [user, token]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [creator, listener, admin]
+        createdAt:
+          type: string
+      required: [id, email, role, createdAt]
+
+    UserWithProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [creator, listener, admin]
+        createdAt:
+          type: string
+        creatorProfile:
+          $ref: "#/components/schemas/CreatorProfile"
+      required: [id, email, role, createdAt]
+
+    CreatorProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        artistName:
+          type: string
+        slug:
+          type: string
+        bio:
+          type: string
+        avatarUrl:
+          type: string
+        bannerUrl:
+          type: string
+        genres:
+          type: array
+          items:
+            type: string
+        moodIdentityTags:
+          type: array
+          items:
+            type: string
+        aiToolsUsed:
+          type: array
+          items:
+            type: string
+        socialLinks:
+          type: object
+          additionalProperties:
+            type: string
+        creatorStatement:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, userId, artistName, slug]
+
+    CreatorPublicProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        artistName:
+          type: string
+        slug:
+          type: string
+        bio:
+          type: string
+        avatarUrl:
+          type: string
+        bannerUrl:
+          type: string
+        genres:
+          type: array
+          items:
+            type: string
+        moodIdentityTags:
+          type: array
+          items:
+            type: string
+        aiToolsUsed:
+          type: array
+          items:
+            type: string
+        socialLinks:
+          type: object
+          additionalProperties:
+            type: string
+        creatorStatement:
+          type: string
+        followerCount:
+          type: integer
+        trackCount:
+          type: integer
+        createdAt:
+          type: string
+      required: [id, artistName, slug]
+
+    CreateCreatorProfileBody:
+      type: object
+      properties:
+        artistName:
+          type: string
+        bio:
+          type: string
+        avatarUrl:
+          type: string
+        bannerUrl:
+          type: string
+        genres:
+          type: array
+          items:
+            type: string
+        moodIdentityTags:
+          type: array
+          items:
+            type: string
+        aiToolsUsed:
+          type: array
+          items:
+            type: string
+        socialLinks:
+          type: object
+          additionalProperties:
+            type: string
+        creatorStatement:
+          type: string
+      required: [artistName]
+
+    UpdateCreatorProfileBody:
+      type: object
+      properties:
+        artistName:
+          type: string
+        bio:
+          type: string
+        avatarUrl:
+          type: string
+        bannerUrl:
+          type: string
+        genres:
+          type: array
+          items:
+            type: string
+        moodIdentityTags:
+          type: array
+          items:
+            type: string
+        aiToolsUsed:
+          type: array
+          items:
+            type: string
+        socialLinks:
+          type: object
+          additionalProperties:
+            type: string
+        creatorStatement:
+          type: string
+
+    Track:
+      type: object
+      properties:
+        id:
+          type: string
+        creatorId:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        audioUrl:
+          type: string
+        coverImageUrl:
+          type: string
+        genre:
+          type: string
+        moodTags:
+          type: array
+          items:
+            type: string
+        soulStory:
+          type: string
+        aiInvolvementType:
+          type: string
+        humanContributionChecklist:
+          type: object
+        rightsConfirmation:
+          type: object
+        visibility:
+          type: string
+          enum: [draft, public, unlisted]
+        moderationStatus:
+          type: string
+          enum: [pending, approved, rejected]
+        isFeatured:
+          type: boolean
+        playCount:
+          type: integer
+        likeCount:
+          type: integer
+        saveCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        creator:
+          $ref: "#/components/schemas/CreatorPublicProfile"
+      required: [id, creatorId, title, slug, visibility, moderationStatus]
+
+    TrackDetail:
+      type: object
+      properties:
+        id:
+          type: string
+        creatorId:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        audioUrl:
+          type: string
+        coverImageUrl:
+          type: string
+        genre:
+          type: string
+        moodTags:
+          type: array
+          items:
+            type: string
+        soulStory:
+          type: string
+        aiInvolvementType:
+          type: string
+        humanContributionChecklist:
+          type: object
+        rightsConfirmation:
+          type: object
+        visibility:
+          type: string
+          enum: [draft, public, unlisted]
+        moderationStatus:
+          type: string
+          enum: [pending, approved, rejected]
+        isFeatured:
+          type: boolean
+        playCount:
+          type: integer
+        likeCount:
+          type: integer
+        saveCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        creator:
+          $ref: "#/components/schemas/CreatorPublicProfile"
+        isLiked:
+          type: boolean
+        isSaved:
+          type: boolean
+      required: [id, creatorId, title, slug, visibility, moderationStatus]
+
+    CreateTrackBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        audioUrl:
+          type: string
+        coverImageUrl:
+          type: string
+        genre:
+          type: string
+        moodTags:
+          type: array
+          items:
+            type: string
+        soulStory:
+          type: string
+        aiInvolvementType:
+          type: string
+        humanContributionChecklist:
+          type: object
+        rightsConfirmation:
+          type: object
+        visibility:
+          type: string
+          enum: [draft, public, unlisted]
+      required: [title, audioUrl, visibility]
+
+    UpdateTrackBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        audioUrl:
+          type: string
+        coverImageUrl:
+          type: string
+        genre:
+          type: string
+        moodTags:
+          type: array
+          items:
+            type: string
+        soulStory:
+          type: string
+        aiInvolvementType:
+          type: string
+        humanContributionChecklist:
+          type: object
+        rightsConfirmation:
+          type: object
+        visibility:
+          type: string
+          enum: [draft, public, unlisted]
+
+    ExploreResponse:
+      type: object
+      properties:
+        tracks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Track"
+        total:
+          type: integer
+      required: [tracks, total]
+
+    CuratedSections:
+      type: object
+      properties:
+        featured:
+          type: array
+          items:
+            $ref: "#/components/schemas/Track"
+        calmRightNow:
+          type: array
+          items:
+            $ref: "#/components/schemas/Track"
+        hopefulSounds:
+          type: array
+          items:
+            $ref: "#/components/schemas/Track"
+        cinematicAi:
+          type: array
+          items:
+            $ref: "#/components/schemas/Track"
+        humanAiCollaborations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Track"
+        hiddenGems:
+          type: array
+          items:
+            $ref: "#/components/schemas/Track"
+        focusAndFlow:
+          type: array
+          items:
+            $ref: "#/components/schemas/Track"
+        latest:
+          type: array
+          items:
+            $ref: "#/components/schemas/Track"
+      required: [featured, calmRightNow, hopefulSounds, cinematicAi, humanAiCollaborations, hiddenGems, focusAndFlow, latest]
+
+    DashboardStats:
+      type: object
+      properties:
+        totalTracks:
+          type: integer
+        publishedTracks:
+          type: integer
+        pendingTracks:
+          type: integer
+        draftTracks:
+          type: integer
+        totalPlays:
+          type: integer
+        totalLikes:
+          type: integer
+        totalSaves:
+          type: integer
+        fanEmailCount:
+          type: integer
+        profileComplete:
+          type: boolean
+        trustProfileComplete:
+          type: boolean
+        trustItems:
+          $ref: "#/components/schemas/TrustItems"
+      required: [totalTracks, publishedTracks, pendingTracks, draftTracks, totalPlays, totalLikes, totalSaves, fanEmailCount, profileComplete, trustProfileComplete, trustItems]
+
+    TrustItems:
+      type: object
+      properties:
+        profileCompleted:
+          type: boolean
+        aiProcessDisclosed:
+          type: boolean
+        humanContributionAdded:
+          type: boolean
+        rightsConfirmationCompleted:
+          type: boolean
+      required: [profileCompleted, aiProcessDisclosed, humanContributionAdded, rightsConfirmationCompleted]
+
+    ListenerLibrary:
+      type: object
+      properties:
+        savedTracks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Track"
+        likedTracks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Track"
+        followedCreators:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreatorPublicProfile"
+      required: [savedTracks, likedTracks, followedCreators]
+
+    TrackInteractionState:
+      type: object
+      properties:
+        isLiked:
+          type: boolean
+        isSaved:
+          type: boolean
+      required: [isLiked, isSaved]
+
+    FanEmailBody:
+      type: object
+      properties:
+        creatorId:
+          type: string
+        trackId:
+          type: string
+        email:
+          type: string
+        consent:
+          type: boolean
+        source:
+          type: string
+      required: [creatorId, email, consent]
+
+    FanEmailListResponse:
+      type: object
+      properties:
+        emails:
+          type: array
+          items:
+            $ref: "#/components/schemas/FanEmail"
+        total:
+          type: integer
+      required: [emails, total]
+
+    FanEmail:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        source:
+          type: string
+        createdAt:
+          type: string
+      required: [id, email, createdAt]
+
+    ReportBody:
+      type: object
+      properties:
+        trackId:
+          type: string
+        reason:
+          type: string
+          enum: [copyright_concern, unauthorized_voice, offensive_content, misleading_disclosure, other]
+        details:
+          type: string
+        reporterEmail:
+          type: string
+      required: [trackId, reason]
+
+    WaitlistBody:
+      type: object
+      properties:
+        email:
+          type: string
+        desiredPlan:
+          type: string
+          enum: [pro, studio]
+      required: [email, desiredPlan]
+
+    UploadUrlBody:
+      type: object
+      properties:
+        filename:
+          type: string
+        contentType:
+          type: string
+      required: [filename, contentType]
+
+    UploadUrlResponse:
+      type: object
+      properties:
+        uploadUrl:
+          type: string
+        publicUrl:
+          type: string
+      required: [uploadUrl, publicUrl]
+
+    AdminMetrics:
+      type: object
+      properties:
+        totalCreators:
+          type: integer
+        totalListeners:
+          type: integer
+        totalTracks:
+          type: integer
+        pendingTracks:
+          type: integer
+        approvedTracks:
+          type: integer
+        totalPlays:
+          type: integer
+        totalLikes:
+          type: integer
+        totalSaves:
+          type: integer
+        totalFanEmails:
+          type: integer
+        proWaitlistCount:
+          type: integer
+        openReports:
+          type: integer
+      required: [totalCreators, totalListeners, totalTracks, pendingTracks, approvedTracks, totalPlays, totalLikes, totalSaves, totalFanEmails, proWaitlistCount, openReports]
+
+    AdminTrack:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        coverImageUrl:
+          type: string
+        genre:
+          type: string
+        aiInvolvementType:
+          type: string
+        visibility:
+          type: string
+        moderationStatus:
+          type: string
+        isFeatured:
+          type: boolean
+        playCount:
+          type: integer
+        likeCount:
+          type: integer
+        reportCount:
+          type: integer
+        createdAt:
+          type: string
+        creator:
+          $ref: "#/components/schemas/CreatorPublicProfile"
+      required: [id, title, slug, visibility, moderationStatus]
+
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        createdAt:
+          type: string
+        artistName:
+          type: string
+        trackCount:
+          type: integer
+      required: [id, email, role, createdAt]
+
+    Report:
+      type: object
+      properties:
+        id:
+          type: string
+        trackId:
+          type: string
+        trackTitle:
+          type: string
+        trackSlug:
+          type: string
+        reporterEmail:
+          type: string
+        reason:
+          type: string
+        details:
+          type: string
+        status:
+          type: string
+          enum: [open, reviewed, resolved]
+        createdAt:
+          type: string
+      required: [id, trackId, reason, status, createdAt]
+
+    RejectTrackBody:
+      type: object
+      properties:
+        reason:
+          type: string
+
+    FeatureTrackBody:
+      type: object
+      properties:
+        featured:
+          type: boolean
+      required: [featured]
+
+    ResolveReportBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [reviewed, resolved]
+      required: [status]

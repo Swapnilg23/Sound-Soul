@@ -1,0 +1,653 @@
+Build a production-ready MVP web app called Sound2Soul.
+
+Sound2Soul is the trust-first identity, publishing, and fan-growth platform for AI-assisted music creators.
+
+Core positioning:
+“Build your AI music identity, publish emotionally rich tracks, prove trust, collect fans, and monetize your sound.”
+
+This is NOT a generic SoundCloud clone.
+This is NOT an AI music generator.
+This is NOT a licensing marketplace in MVP.
+This is NOT a royalty or payout platform in MVP.
+
+Sound2Soul exists to help AI-assisted music creators:
+1. Create a trusted public music identity
+2. Publish tracks with emotional context
+3. Disclose AI involvement transparently
+4. Self-certify basic rights information
+5. Collect fans and email subscribers
+6. Prepare for future monetization safely
+
+The product should feel premium, safe, emotional, creator-first, and investor/acquirer-demo ready.
+
+Primary MVP thesis:
+AI music generation tools help people create songs. Sound2Soul helps those songs become trusted, discoverable, emotionally meaningful creator assets.
+
+Important legal/safety principle:
+Do not claim that Sound2Soul verifies copyright ownership.
+Do not claim that uploaded tracks are copyright-safe, legally cleared, royalty-free, or guaranteed for commercial use.
+Use cautious language:
+- “AI process disclosed”
+- “Creator-certified rights”
+- “Human contribution details”
+- “This information is provided by the creator.”
+- “Sound2Soul does not provide legal clearance or copyright verification.”
+- “Tracks may be reviewed or removed if rights concerns are reported.”
+
+Avoid these phrases:
+- “Copyright safe”
+- “Legally cleared”
+- “Verified ownership”
+- “Guaranteed commercial use”
+- “Royalty-free”
+- “Officially cleared”
+
+Build as a responsive web app first.
+It must work beautifully on desktop and mobile browsers.
+Do not build a native mobile app.
+
+Tech stack:
+- React
+- TypeScript
+- Tailwind CSS
+- Supabase database
+- Supabase Auth
+- Supabase Storage for audio and images
+- Supabase Row Level Security
+- Optional Stripe placeholder only
+- No full Stripe billing required in first version
+- Store Pro plan interest in a waitlist table
+
+Design direction:
+- Premium music-tech aesthetic
+- Dark mode first
+- Elegant, emotional, polished
+- Warm accent colors: violet, amber, deep blue, soft gradients
+- Rounded cards
+- Smooth audio player UI
+- Clean typography
+- Mobile responsive
+- Avoid clutter
+- Avoid looking like a direct SoundCloud copy
+- The product should feel like “AI music meets emotional storytelling and trust”
+
+User roles:
+1. Creator
+2. Listener
+3. Admin
+
+Main pages and routes:
+
+1. Landing Page
+Route: /
+
+Hero:
+Headline:
+“Build Your AI Music Identity”
+
+Subheadline:
+“Publish emotionally rich tracks, disclose your creative process, collect fans, and prepare to monetize your sound.”
+
+Primary CTA:
+“Start as Creator”
+
+Secondary CTA:
+“Explore Music”
+
+Sections:
+- What is Sound2Soul?
+- Why AI music needs trust
+- For creators
+- For listeners
+- Trust-first publishing
+- Fan-growth tools
+- Pricing preview
+- Final CTA
+
+Feature cards:
+1. Publish with Soul
+2. Disclose Your Creative Process
+3. Get Discovered by Mood
+4. Collect Fans
+5. Prepare to Monetize
+
+Trust section copy:
+“Sound2Soul helps creators disclose AI involvement, confirm rights information, and build listener trust. Rights information is provided by creators and does not represent legal clearance by Sound2Soul.”
+
+2. Signup Page
+Route: /signup
+
+Allow users to sign up as:
+- Creator
+- Listener
+
+Fields:
+- Email
+- Password
+- Role selection
+
+After creator signup, redirect to creator onboarding.
+After listener signup, redirect to explore page.
+
+3. Login Page
+Route: /login
+
+Standard email/password login.
+
+4. Creator Onboarding
+Route: /creator/onboarding
+
+Fields:
+- Artist name
+- Short bio
+- Profile image
+- Banner image
+- Genres
+- Mood identity tags
+- AI tools used
+- Social links
+- Creator statement
+
+Creator statement label:
+“What does your music help people feel?”
+
+Save to creator_profiles table.
+
+5. Creator Dashboard
+Route: /creator/dashboard
+
+Show:
+- Profile completion status
+- Trust profile completion status
+- Upload new track button
+- Existing tracks
+- Track moderation status
+- Plays
+- Likes
+- Saves
+- Fan emails collected
+- Fan email list preview
+- Upgrade to Pro placeholder
+- Pro waitlist button
+
+Trust score should be simple and non-legal:
+- Profile completed
+- AI process disclosed
+- Human contribution details added
+- Rights confirmation completed
+
+Do not call it “legal score.”
+Call it “Trust Profile Completion.”
+
+6. Upload Track Page
+Route: /creator/upload
+
+Fields:
+- Track title
+- Description
+- Audio file upload: MP3 or WAV only
+- Cover image upload
+- Genre
+- Mood tags
+- Soul Story
+- AI involvement type
+- Human contribution checklist
+- Rights confirmation checklist
+- Visibility
+
+Soul Story field label:
+“What emotion, memory, or moment inspired this track?”
+
+AI involvement type dropdown:
+1. Human-created, no AI
+2. AI-assisted lyrics
+3. AI-assisted composition
+4. AI-assisted vocals
+5. AI-generated draft, human-edited
+6. Fully AI-generated
+
+Human contribution checklist:
+- I wrote or edited lyrics
+- I arranged or edited the track
+- I selected, curated, or modified AI outputs creatively
+- I added vocals or instrumentation
+- I mixed, mastered, or edited the final result
+- I created the concept, direction, or emotional story
+
+Rights confirmation checklist:
+All must be checked before public submission:
+- I have the right to upload this audio
+- This track does not knowingly include unauthorized copyrighted samples
+- This track does not knowingly imitate a real artist’s voice without permission
+- I understand Sound2Soul does not guarantee copyright ownership or legal clearance
+- I agree this track may be reviewed or removed if a valid rights complaint is received
+
+Visibility options:
+- Draft
+- Public
+- Unlisted
+
+Button:
+“Submit for Review”
+
+Important:
+If visibility is Public, set moderation_status to pending.
+Public tracks should not appear on Explore until approved by admin.
+Unlisted tracks should be shareable by URL but not appear on Explore.
+Draft tracks should only be visible to the creator.
+
+7. Track Page
+Route: /track/:slug
+
+Show:
+- Audio player
+- Cover image
+- Track title
+- Creator name and profile link
+- Mood tags
+- Genre
+- Description
+- Soul Story
+- AI involvement disclosure badge
+- Human contribution summary
+- Creator-certified rights badge
+- Like button
+- Save button
+- Share button
+- Fan email capture form
+- Report track button
+
+Trust Card section:
+Title:
+“Track Trust Information”
+
+Fields:
+- AI process disclosed
+- Human contribution details
+- Creator-certified rights
+- AI tools used, if available
+- Disclaimer: “This information is provided by the creator. Sound2Soul does not provide legal clearance or copyright verification.”
+
+Fan email form:
+Headline:
+“Join this creator’s fan list”
+
+Fields:
+- Email
+- Consent checkbox:
+“I agree to receive updates from this creator through Sound2Soul.”
+
+8. Creator Public Profile
+Route: /creator/:slug
+
+Show:
+- Avatar
+- Banner
+- Artist name
+- Bio
+- Creator statement
+- AI tools used
+- Genres
+- Mood identity tags
+- Social links
+- Follow button
+- Fan email capture form
+- Featured track
+- Track grid/list
+- Trust profile section
+
+Trust profile section:
+- AI process disclosure enabled
+- Creator-certified rights fields completed
+- Human contribution details available
+- Fan community growing
+
+Do not say “verified creator” unless admin manually marks them verified later.
+For MVP, use “Trust Profile Available.”
+
+9. Explore Page
+Route: /explore
+
+Show:
+- Search bar
+- Mood filters
+- Genre filters
+- AI involvement filters
+- Featured tracks
+- Latest approved tracks
+- Curated sections:
+  - Calm Right Now
+  - Hopeful Sounds
+  - Cinematic AI
+  - Human + AI Collaborations
+  - Hidden Gems
+  - Focus and Flow
+
+Only show tracks where:
+visibility = public
+moderation_status = approved
+
+No complex algorithm needed.
+Use simple filtering and manually featured tracks.
+
+10. Listener Library
+Route: /library
+
+For logged-in listeners:
+- Saved tracks
+- Liked tracks
+- Followed creators
+
+11. Pricing Page
+Route: /pricing
+
+Plans:
+
+Free Creator:
+- 3 public tracks
+- Creator profile
+- Mood discovery
+- Basic fan capture
+- Basic analytics
+
+Creator Pro — $9/month:
+- 25 tracks
+- Featured profile eligibility
+- Advanced profile customization
+- Deeper analytics
+- Fan email export
+- Scheduled releases soon
+- Monetization tools soon
+
+Creator Studio — $19/month:
+- 100 tracks
+- Licensing-ready metadata fields
+- Private and unlisted tracks
+- Priority review
+- Creator portfolio page
+- Advanced analytics soon
+
+Buttons:
+- Start Free
+- Join Pro Waitlist
+- Join Studio Waitlist
+
+For now, store waitlist interest in Supabase.
+Do not implement paid subscriptions unless quick and clean.
+
+12. Admin Dashboard
+Route: /admin
+
+Must be protected by admin role.
+
+Admin features:
+- View all users
+- View all creators
+- View all tracks
+- View pending tracks
+- Approve track
+- Reject track
+- Feature/unfeature track
+- Remove track
+- View reports
+- Resolve reports
+- View rights disclosure fields
+- View fan email counts
+- View platform metrics
+
+Platform metrics:
+- Total creators
+- Total listeners
+- Total tracks
+- Pending tracks
+- Approved tracks
+- Total plays
+- Total likes
+- Total saves
+- Total fan emails
+- Pro waitlist count
+
+13. Report Track Flow
+
+Every public track should have a report button.
+
+Report form fields:
+- Reason dropdown:
+  1. Copyright concern
+  2. Unauthorized voice imitation
+  3. Offensive content
+  4. Misleading AI disclosure
+  5. Other
+- Details
+- Reporter email optional
+
+Save reports to reports table.
+Admin can review and mark report status.
+
+Database schema:
+
+users:
+- id uuid primary key
+- email text
+- role text check role in ('creator','listener','admin')
+- created_at timestamp
+
+creator_profiles:
+- id uuid primary key
+- user_id uuid references users.id
+- artist_name text
+- slug text unique
+- bio text
+- avatar_url text
+- banner_url text
+- genres text[]
+- mood_identity_tags text[]
+- ai_tools_used text[]
+- social_links jsonb
+- creator_statement text
+- created_at timestamp
+- updated_at timestamp
+
+tracks:
+- id uuid primary key
+- creator_id uuid references creator_profiles.id
+- title text
+- slug text unique
+- description text
+- audio_url text
+- cover_image_url text
+- genre text
+- mood_tags text[]
+- soul_story text
+- ai_involvement_type text
+- human_contribution_checklist jsonb
+- rights_confirmation jsonb
+- visibility text check visibility in ('draft','public','unlisted')
+- moderation_status text check moderation_status in ('pending','approved','rejected')
+- is_featured boolean default false
+- play_count integer default 0
+- like_count integer default 0
+- save_count integer default 0
+- report_count integer default 0
+- created_at timestamp
+- updated_at timestamp
+
+likes:
+- id uuid primary key
+- user_id uuid references users.id
+- track_id uuid references tracks.id
+- created_at timestamp
+- unique(user_id, track_id)
+
+saves:
+- id uuid primary key
+- user_id uuid references users.id
+- track_id uuid references tracks.id
+- created_at timestamp
+- unique(user_id, track_id)
+
+follows:
+- id uuid primary key
+- follower_user_id uuid references users.id
+- creator_id uuid references creator_profiles.id
+- created_at timestamp
+- unique(follower_user_id, creator_id)
+
+fan_emails:
+- id uuid primary key
+- creator_id uuid references creator_profiles.id
+- track_id uuid nullable references tracks.id
+- email text
+- source text
+- consent boolean
+- created_at timestamp
+
+reports:
+- id uuid primary key
+- track_id uuid references tracks.id
+- reporter_email text nullable
+- reason text
+- details text
+- status text check status in ('open','reviewed','resolved')
+- created_at timestamp
+
+pro_waitlist:
+- id uuid primary key
+- user_id uuid nullable references users.id
+- email text
+- desired_plan text
+- created_at timestamp
+
+Required business logic:
+- Free creators can publish up to 3 public approved/pending tracks.
+- Creators can create draft tracks beyond the public limit, but cannot submit more than 3 public tracks on Free.
+- Tracks must complete rights confirmation before public submission.
+- Public tracks default to moderation_status = pending.
+- Only approved public tracks appear on Explore.
+- Unlisted tracks can be accessed by URL but do not show in Explore.
+- Draft tracks are only visible to the creator.
+- Fan email forms must require consent checkbox.
+- Report button creates a report record.
+- Admin can approve, reject, feature, unfeature, or remove tracks.
+- No download buttons in MVP.
+- No creator payouts in MVP.
+- No licensing marketplace in MVP.
+- No AI generation in MVP.
+- No autoplay.
+- Increment play count when audio playback starts.
+
+Supabase Row Level Security:
+- Public users can view approved public tracks.
+- Public users can view public creator profiles.
+- Creators can only edit their own profiles.
+- Creators can only create/edit/delete their own tracks.
+- Listeners can only manage their own likes, saves, and follows.
+- Admin can manage all tracks, reports, and featured status.
+- Fan email creation should be allowed from public forms, but reading fan emails should be limited to the relevant creator and admins.
+
+Audio player:
+- Custom clean audio player
+- Play/pause
+- Progress bar
+- Duration
+- No autoplay
+- Increment play count once when play starts
+
+Seed demo data:
+Create demo data for:
+- 5 creators
+- 12 tracks
+
+Mood tags:
+- Calm
+- Hopeful
+- Nostalgic
+- Cinematic
+- Focus
+- Healing
+- Romantic
+- Dark
+- Energetic
+- Spiritual
+- Playful
+- Dreamy
+
+Genres:
+- Lo-fi
+- Pop
+- Cinematic
+- Ambient
+- EDM
+- Hip-Hop
+- Acoustic
+- Experimental
+
+Demo creators:
+1. Nova Hymns
+Bio: Cinematic AI-assisted soundscapes for healing and reflection.
+Mood identity: Healing, Cinematic, Spiritual
+
+2. LoFi Aarav
+Bio: Late-night lo-fi tracks for focus and nostalgia.
+Mood identity: Focus, Nostalgic, Calm
+
+3. Mira Echo
+Bio: AI-assisted vocal pop with emotional stories.
+Mood identity: Romantic, Hopeful, Dreamy
+
+4. DreamCircuit
+Bio: Ambient experimental tracks for sleep and imagination.
+Mood identity: Dreamy, Calm, Dark
+
+5. SoulPatch
+Bio: Human-edited AI music for creators, videos, and calm moments.
+Mood identity: Playful, Focus, Hopeful
+
+Empty states:
+- If no tracks exist, show a helpful message and CTA.
+- If creator has no fan emails, show: “Your fan list will appear here once listeners subscribe.”
+- If no saved tracks, show: “Start exploring and save tracks you love.”
+- If no pending admin tracks, show: “No tracks waiting for review.”
+
+Loading states:
+- Add loading skeletons or spinners for dashboards, explore, track pages, and profile pages.
+
+Error states:
+- Show friendly errors for upload failure, auth failure, permission issues, and missing pages.
+
+Acceptance criteria:
+1. A creator can sign up.
+2. A creator can complete onboarding.
+3. A creator can upload a track with audio, cover image, mood tags, Soul Story, AI disclosure, human contribution, and rights confirmation.
+4. Public submitted tracks go to pending review.
+5. Admin can approve the track.
+6. Approved tracks appear on Explore.
+7. Public users can listen to approved tracks.
+8. A listener can sign up and like/save/follow.
+9. A listener or public visitor can join a creator fan list with consent.
+10. Creator dashboard shows plays, likes, saves, and fan emails.
+11. Track page shows Trust Card.
+12. Creator profile shows Trust Profile.
+13. Admin can view reports and remove risky tracks.
+14. The app is polished and mobile responsive.
+15. The app is demo-ready for potential investors or acquirers.
+
+Build priority:
+Do not overbuild.
+Do not add chat, DMs, remixing, AI generation, native mobile, creator payouts, licensing, complex comments, or algorithmic feed.
+Focus only on:
+1. Creator identity
+2. Track publishing
+3. AI-process disclosure
+4. Rights self-certification
+5. Emotional discovery
+6. Fan email capture
+7. Admin moderation
+8. Pro waitlist
+9. Demo-ready polish
+
+Internal product name:
+Sound2Soul Trust MVP
+
+Internal category:
+AI Music Identity + Trust Layer

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Sound2Soul"
+version = "1.0.0"
+id = "artifacts/sound2soul"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21762
+
+[services.development]
+run = "pnpm --filter @workspace/sound2soul run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sound2soul", "run", "build" ]
+publicDir = "artifacts/sound2soul/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21762"
+BASE_PATH = "/"
