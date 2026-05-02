@@ -3,7 +3,7 @@ import { db } from "@workspace/db";
 import {
   likesTable, savesTable, followsTable, tracksTable, creatorProfilesTable,
 } from "@workspace/db";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, inArray, desc } from "drizzle-orm";
 import { requireAuth } from "../lib/auth";
 import { generateId } from "../lib/id";
 
@@ -115,6 +115,34 @@ router.get("/library", requireAuth, async (req, res) => {
     likedTracks: likedRows.filter(r => r.track).map(r => formatTrack(r.track!, r.creator)),
     followedCreators: followedRows.filter(r => r.creator).map(r => formatCreator(r.creator!)),
   });
+});
+
+// Following feed — recent tracks from creators the user follows
+router.get("/following/feed", requireAuth, async (req, res) => {
+  const user = (req as any).user;
+
+  const follows = await db.select({ creatorId: followsTable.creatorId })
+    .from(followsTable)
+    .where(eq(followsTable.followerUserId, user.id));
+
+  if (follows.length === 0) {
+    return res.json({ tracks: [] });
+  }
+
+  const creatorIds = follows.map(f => f.creatorId);
+
+  const rows = await db.select({ track: tracksTable, creator: creatorProfilesTable })
+    .from(tracksTable)
+    .leftJoin(creatorProfilesTable, eq(tracksTable.creatorId, creatorProfilesTable.id))
+    .where(and(
+      inArray(tracksTable.creatorId, creatorIds),
+      eq(tracksTable.moderationStatus, "approved"),
+      eq(tracksTable.visibility, "public"),
+    ))
+    .orderBy(desc(tracksTable.createdAt))
+    .limit(20);
+
+  res.json({ tracks: rows.filter(r => r.track).map(r => formatTrack(r.track!, r.creator)) });
 });
 
 // Track interaction state

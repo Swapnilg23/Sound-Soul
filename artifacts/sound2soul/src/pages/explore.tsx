@@ -1,14 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useExploreTracks, useGetCuratedSections } from '@workspace/api-client-react';
 import { Link } from 'wouter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Play } from 'lucide-react';
 import { AdBanner } from '@/components/AdBanner';
+import { useAuth } from '@/lib/auth';
+
+function useFollowingFeed() {
+  const [tracks, setTracks] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) { setTracks([]); return; }
+    const token = localStorage.getItem('sound2soul_token');
+    if (!token) return;
+    setIsLoading(true);
+    fetch('/api/following/feed', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : { tracks: [] })
+      .then(d => setTracks(d.tracks ?? []))
+      .catch(() => setTracks([]))
+      .finally(() => setIsLoading(false));
+  }, [user?.id]);
+
+  return { tracks, isLoading };
+}
 
 export default function Explore() {
   const [search, setSearch] = useState('');
+  const { user } = useAuth();
 
   const { data: curatedData, isLoading: isCuratedLoading } = useGetCuratedSections();
+  const { tracks: feedTracks, isLoading: isFeedLoading } = useFollowingFeed();
 
   const { data: searchData, isLoading: isSearchLoading } = useExploreTracks(
     { search: search.length > 2 ? search : undefined, limit: 20 },
@@ -16,6 +39,7 @@ export default function Explore() {
   );
 
   const isSearching = search.length > 2;
+  const showFeed = !!user && (isFeedLoading || feedTracks.length > 0);
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] pb-20">
@@ -56,6 +80,20 @@ export default function Explore() {
         </div>
       ) : (
         <div className="space-y-10">
+          {/* Personalised feed — only for logged-in users who follow creators */}
+          {showFeed && (
+            isFeedLoading ? (
+              <SectionSkeleton label="From Creators You Follow" />
+            ) : (
+              <ScrollSection
+                title="From Creators You Follow"
+                tracks={feedTracks}
+                headerLink={{ label: 'See all following', href: '/library?tab=following' }}
+                accent
+              />
+            )
+          )}
+
           {isCuratedLoading ? (
             <>
               <SectionSkeleton />
@@ -99,11 +137,28 @@ export default function Explore() {
   );
 }
 
-function ScrollSection({ title, tracks }: { title: string; tracks: any[] }) {
+function ScrollSection({
+  title, tracks, headerLink, accent,
+}: {
+  title: string;
+  tracks: any[];
+  headerLink?: { label: string; href: string };
+  accent?: boolean;
+}) {
   return (
     <section>
       <div className="px-6 lg:px-10 max-w-7xl mx-auto mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold">{title}</h2>
+        <div className="flex items-center gap-3">
+          {accent && (
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          )}
+          <h2 className={`text-xl font-bold ${accent ? 'text-foreground' : ''}`}>{title}</h2>
+        </div>
+        {headerLink && (
+          <Link href={headerLink.href} className="text-xs text-muted-foreground hover:text-primary transition-colors">
+            {headerLink.label} →
+          </Link>
+        )}
       </div>
       <div
         className="scroll-row flex gap-4 overflow-x-auto px-6 lg:px-10 pb-2"
@@ -168,11 +223,18 @@ function CardSkeleton() {
   );
 }
 
-function SectionSkeleton() {
+function SectionSkeleton({ label }: { label?: string } = {}) {
   return (
     <section>
-      <div className="px-6 lg:px-10 mb-4">
-        <Skeleton className="h-6 w-40" />
+      <div className="px-6 lg:px-10 mb-4 flex items-center gap-3">
+        {label ? (
+          <>
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-xl font-bold">{label}</span>
+          </>
+        ) : (
+          <Skeleton className="h-6 w-40" />
+        )}
       </div>
       <div className="flex gap-4 px-6 lg:px-10">
         {[...Array(5)].map((_, i) => (
