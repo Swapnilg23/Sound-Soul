@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { creatorProfilesTable, tracksTable, followsTable } from "@workspace/db";
-import { eq, and, count } from "drizzle-orm";
+import { creatorProfilesTable, tracksTable, followsTable, repostsTable } from "@workspace/db";
+import { eq, and, count, desc } from "drizzle-orm";
 import { requireAuth, requireCreator } from "../lib/auth";
 import { generateId, generateSlug } from "../lib/id";
 
@@ -123,6 +123,58 @@ router.get("/:slug/tracks", async (req, res) => {
   ).orderBy(tracksTable.createdAt);
 
   res.json(tracks.map(t => formatTrack(t, profile)));
+});
+
+// Activity feed: own releases + reposts, merged and sorted by recency
+router.get("/:slug/activity", async (req, res) => {
+  const [profile] = await db.select().from(creatorProfilesTable)
+    .where(eq(creatorProfilesTable.slug, req.params.slug))
+    .limit(1);
+
+  if (!profile) return res.status(404).json({ error: "Creator not found" });
+
+  const approvedPublic = and(
+    eq(tracksTable.visibility, "public"),
+    eq(tracksTable.moderationStatus, "approved"),
+  );
+
+  // Own releases
+  const ownTracks = await db.select().from(tracksTable)
+    .where(and(eq(tracksTable.creatorId, profile.id), approvedPublic!))
+    .orderBy(desc(tracksTable.createdAt))
+    .limit(20);
+
+  // Reposts by this creator (via their userId)
+  const repostRows = await db
+    .select({ repost: repostsTable, track: tracksTable, creator: creatorProfilesTable })
+    .from(repostsTable)
+    .leftJoin(tracksTable, eq(repostsTable.trackId, tracksTable.id))
+    .leftJoin(creatorProfilesTable, eq(tracksTable.creatorId, creatorProfilesTable.id))
+    .where(and(eq(repostsTable.userId, profile.userId), approvedPublic!))
+    .orderBy(desc(repostsTable.createdAt))
+    .limit(20);
+
+  // Merge & sort
+  const releases = ownTracks.map(t => ({
+    type: "release" as const,
+    sortDate: t.createdAt?.toISOString?.() ?? t.createdAt,
+    track: formatTrack(t, profile),
+  }));
+
+  const reposts = repostRows
+    .filter(r => r.track)
+    .map(r => ({
+      type: "repost" as const,
+      sortDate: r.repost.createdAt?.toISOString?.() ?? r.repost.createdAt,
+      repostedAt: r.repost.createdAt?.toISOString?.() ?? r.repost.createdAt,
+      track: formatTrack(r.track!, r.creator),
+    }));
+
+  const merged = [...releases, ...reposts]
+    .sort((a, b) => new Date(b.sortDate).getTime() - new Date(a.sortDate).getTime())
+    .slice(0, 30);
+
+  res.json({ activity: merged });
 });
 
 function formatProfile(p: any) {
