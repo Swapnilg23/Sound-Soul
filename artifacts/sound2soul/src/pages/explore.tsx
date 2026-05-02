@@ -1,8 +1,9 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { useExploreTracks, useGetCuratedSections } from '@workspace/api-client-react';
 import { Link } from 'wouter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Play } from 'lucide-react';
+import { AdBanner } from '@/components/AdBanner';
 
 export default function Explore() {
   const [search, setSearch] = useState('');
@@ -66,6 +67,12 @@ export default function Explore() {
               {curatedData?.featured && curatedData.featured.length > 0 && (
                 <ScrollSection title="Featured" tracks={curatedData.featured} />
               )}
+
+              {/* Ad placement after Featured */}
+              <div className="px-6 lg:px-10 max-w-7xl mx-auto">
+                <AdBanner variant="explore" />
+              </div>
+
               {curatedData?.calmRightNow && curatedData.calmRightNow.length > 0 && (
                 <ScrollSection title="Calm Right Now" tracks={curatedData.calmRightNow} />
               )}
@@ -93,15 +100,12 @@ export default function Explore() {
 }
 
 function ScrollSection({ title, tracks }: { title: string; tracks: any[] }) {
-  const rowRef = useRef<HTMLDivElement>(null);
-
   return (
     <section>
       <div className="px-6 lg:px-10 max-w-7xl mx-auto mb-4 flex items-center justify-between">
         <h2 className="text-xl font-bold">{title}</h2>
       </div>
       <div
-        ref={rowRef}
         className="scroll-row flex gap-4 overflow-x-auto px-6 lg:px-10 pb-2"
         style={{ scrollPaddingLeft: '1.5rem' }}
       >
@@ -125,7 +129,6 @@ function TrackCard({ track }: { track: any }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {/* Cover art */}
         <div className="relative rounded-2xl overflow-hidden aspect-square bg-card mb-3">
           {track.coverImageUrl ? (
             <img
@@ -140,16 +143,12 @@ function TrackCard({ track }: { track: any }) {
               </svg>
             </div>
           )}
-
-          {/* Play overlay */}
           <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200 ${hovered ? 'opacity-100' : 'opacity-0'}`}>
             <div className="w-11 h-11 rounded-full bg-foreground flex items-center justify-center shadow-xl transform transition-transform duration-200 scale-90 group-hover:scale-100">
               <Play className="w-5 h-5 text-background ml-0.5" fill="currentColor" />
             </div>
           </div>
         </div>
-
-        {/* Text */}
         <div className="space-y-0.5 px-0.5">
           <p className="text-sm font-semibold truncate leading-tight">{track.title}</p>
           <p className="text-xs text-muted-foreground truncate">{track.creator?.artistName || 'Unknown Artist'}</p>

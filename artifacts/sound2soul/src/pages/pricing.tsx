@@ -15,38 +15,35 @@ export default function Pricing() {
   const handleJoinWaitlist = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !selectedPlan) return;
-    
     try {
-      await joinWaitlistMutation.mutateAsync({
-        data: {
-          email,
-          desiredPlan: selectedPlan
-        }
-      });
+      await joinWaitlistMutation.mutateAsync({ data: { email, desiredPlan: selectedPlan } });
       toast.success("You're on the list!", {
         description: `We'll let you know when the ${selectedPlan} plan is ready.`
       });
       setEmail('');
-    } catch (err) {
+    } catch {
       toast.error('Failed to join waitlist. Please try again.');
     }
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] py-20 px-4">
+    <div className="min-h-[calc(100vh-3.5rem)] py-20 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Simple, transparent pricing</h1>
-          <p className="text-xl text-muted-foreground">Choose the plan that fits your creative journey.</p>
+        <div className="text-center mb-16 space-y-3">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Simple, transparent pricing</h1>
+          <p className="text-lg text-muted-foreground">Choose the plan that fits your creative journey.</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {/* Free Plan */}
-          <Card className="bg-background/50 border-white/10 flex flex-col">
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-start">
+
+          {/* Free / Listener Plan */}
+          <Card className="bg-card/50 border-white/8 flex flex-col">
             <CardHeader>
               <CardTitle className="text-2xl">Listener</CardTitle>
-              <div className="text-4xl font-bold mt-4 mb-2">$0<span className="text-lg text-muted-foreground font-normal">/mo</span></div>
-              <CardDescription>Everything you need to discover and save music.</CardDescription>
+              <div className="text-4xl font-bold mt-4 mb-2">
+                $0<span className="text-lg text-muted-foreground font-normal">/mo</span>
+              </div>
+              <CardDescription>Discover AI-assisted music. Free, forever.</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <ul className="space-y-3 text-sm">
@@ -54,28 +51,33 @@ export default function Pricing() {
                   <CheckIcon /> Unlimited listening
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Save tracks & follow creators
+                  <CheckIcon /> Save tracks &amp; follow creators
                 </li>
-                <li className="flex items-center gap-2">
-                  <CheckIcon /> Ad-free experience
+                <li className="flex items-center gap-2 text-muted-foreground">
+                  <AdIcon /> Ad-supported listening
                 </li>
               </ul>
+              <div className="mt-5 p-3 bg-background/60 rounded-xl border border-white/6 text-xs text-muted-foreground leading-relaxed">
+                Ads keep Sound2Soul free and fund payouts to creators. Upgrade to remove them.
+              </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full" variant="outline" asChild>
+              <Button className="w-full rounded-full" variant="outline" asChild>
                 <Link href="/signup">Sign Up Free</Link>
               </Button>
             </CardFooter>
           </Card>
 
-          {/* Pro Plan */}
-          <Card className="bg-card/80 border-primary/50 flex flex-col relative transform md:-translate-y-4 shadow-xl shadow-primary/10">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold">
+          {/* Creator Pro */}
+          <Card className="bg-card border-primary/40 flex flex-col relative md:-translate-y-4 shadow-2xl shadow-primary/10">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold tracking-wide">
               MOST POPULAR
             </div>
             <CardHeader>
               <CardTitle className="text-2xl">Creator Pro</CardTitle>
-              <div className="text-4xl font-bold mt-4 mb-2">$9<span className="text-lg text-muted-foreground font-normal">/mo</span></div>
+              <div className="text-4xl font-bold mt-4 mb-2">
+                $9<span className="text-lg text-muted-foreground font-normal">/mo</span>
+              </div>
               <CardDescription>For independent AI-assisted creators.</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
@@ -87,7 +89,7 @@ export default function Pricing() {
                   <CheckIcon /> Unlimited track uploads
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Trust Card & Soul Stories
+                  <CheckIcon /> Trust Card &amp; Soul Stories
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckIcon /> Direct fan email capture
@@ -95,14 +97,19 @@ export default function Pricing() {
                 <li className="flex items-center gap-2">
                   <CheckIcon /> Basic analytics
                 </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon /> Ad-free for your listeners
+                </li>
               </ul>
             </CardContent>
             <CardFooter>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button className="w-full" onClick={() => setSelectedPlan('pro')}>Join Waitlist</Button>
+                  <Button className="w-full rounded-full" onClick={() => setSelectedPlan('pro')}>
+                    Join Waitlist
+                  </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="bg-card border-white/10">
                   <DialogHeader>
                     <DialogTitle>Join the Creator Pro waitlist</DialogTitle>
                     <DialogDescription>
@@ -110,14 +117,8 @@ export default function Pricing() {
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleJoinWaitlist} className="space-y-4 pt-4">
-                    <Input 
-                      type="email" 
-                      placeholder="Enter your email" 
-                      value={email} 
-                      onChange={(e) => setEmail(e.target.value)} 
-                      required
-                    />
-                    <Button type="submit" className="w-full" disabled={joinWaitlistMutation.isPending}>
+                    <Input type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required />
+                    <Button type="submit" className="w-full rounded-full" disabled={joinWaitlistMutation.isPending}>
                       {joinWaitlistMutation.isPending ? 'Joining...' : 'Join Waitlist'}
                     </Button>
                   </form>
@@ -126,35 +127,42 @@ export default function Pricing() {
             </CardFooter>
           </Card>
 
-          {/* Studio Plan */}
-          <Card className="bg-background/50 border-white/10 flex flex-col">
+          {/* Creator Studio */}
+          <Card className="bg-card/50 border-white/8 flex flex-col">
             <CardHeader>
               <CardTitle className="text-2xl">Creator Studio</CardTitle>
-              <div className="text-4xl font-bold mt-4 mb-2">$19<span className="text-lg text-muted-foreground font-normal">/mo</span></div>
+              <div className="text-4xl font-bold mt-4 mb-2">
+                $19<span className="text-lg text-muted-foreground font-normal">/mo</span>
+              </div>
               <CardDescription>Advanced tools for serious creators.</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <ul className="space-y-3 text-sm">
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Everything in Pro
+                  <CheckIcon /> Everything in Creator Pro
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckIcon /> Advanced listener analytics
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Priority queue for 'Explore'
+                  <CheckIcon /> Priority placement on Explore
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckIcon /> Custom profile themes
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon /> Revenue share from fan ads
                 </li>
               </ul>
             </CardContent>
             <CardFooter>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button className="w-full" variant="outline" onClick={() => setSelectedPlan('studio')}>Join Waitlist</Button>
+                  <Button className="w-full rounded-full" variant="outline" onClick={() => setSelectedPlan('studio')}>
+                    Join Waitlist
+                  </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="bg-card border-white/10">
                   <DialogHeader>
                     <DialogTitle>Join the Creator Studio waitlist</DialogTitle>
                     <DialogDescription>
@@ -162,14 +170,8 @@ export default function Pricing() {
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleJoinWaitlist} className="space-y-4 pt-4">
-                    <Input 
-                      type="email" 
-                      placeholder="Enter your email" 
-                      value={email} 
-                      onChange={(e) => setEmail(e.target.value)} 
-                      required
-                    />
-                    <Button type="submit" className="w-full" disabled={joinWaitlistMutation.isPending}>
+                    <Input type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required />
+                    <Button type="submit" className="w-full rounded-full" disabled={joinWaitlistMutation.isPending}>
                       {joinWaitlistMutation.isPending ? 'Joining...' : 'Join Waitlist'}
                     </Button>
                   </form>
@@ -178,6 +180,11 @@ export default function Pricing() {
             </CardFooter>
           </Card>
         </div>
+
+        {/* Revenue model note */}
+        <p className="text-center text-xs text-muted-foreground/40 mt-12 max-w-md mx-auto">
+          Free-tier listeners fund the platform through ads. Pro and Studio subscriptions remove ads and unlock creator tools.
+        </p>
       </div>
     </div>
   );
@@ -185,8 +192,16 @@ export default function Pricing() {
 
 function CheckIcon() {
   return (
-    <svg className="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+    <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
+function AdIcon() {
+  return (
+    <svg className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
     </svg>
   );
 }
