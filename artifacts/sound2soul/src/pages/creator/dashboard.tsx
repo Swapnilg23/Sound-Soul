@@ -30,7 +30,7 @@ export default function CreatorDashboard() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard title="Total Plays" value={stats.totalPlays.toString()} icon="▶" />
           <StatCard title="Total Saves" value={stats.totalSaves.toString()} icon="♥" />
-          <StatCard title="Fan Emails" value={stats.fanEmailCount.toString()} icon="✉" />
+          <StatCard title="Followers" value={(stats.followerCount ?? stats.fanEmailCount ?? 0).toString()} icon="♟" />
           <StatCard title="Published Tracks" value={stats.publishedTracks.toString()} icon="♫" />
         </div>
       ) : null}

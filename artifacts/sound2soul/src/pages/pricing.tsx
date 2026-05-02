@@ -89,7 +89,7 @@ export default function Pricing() {
                   <CheckIcon /> Trust Card &amp; Soul Stories
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Direct fan email capture
+                  <CheckIcon /> New release notifications to followers
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckIcon /> Basic analytics

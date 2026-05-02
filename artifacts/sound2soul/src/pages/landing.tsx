@@ -301,9 +301,9 @@ export default function Landing() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-3">Direct Fan Growth</h3>
+              <h3 className="text-xl font-bold mb-3">Real Audience Growth</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Capture emails directly from your tracks. Turn casual listeners into fans you own and can reach anytime.
+                Every follow, save, and play builds your presence on Sound2Soul. Listeners discover you here — and come back here.
               </p>
             </div>
           </div>
