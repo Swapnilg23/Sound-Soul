@@ -4,6 +4,7 @@ import { commentsTable, tracksTable, usersTable, creatorProfilesTable } from "@w
 import { eq, desc } from "drizzle-orm";
 import { requireAuth } from "../lib/auth";
 import { generateId } from "../lib/id";
+import { notify } from "../lib/notify";
 
 const router = Router({ mergeParams: true });
 
@@ -74,6 +75,28 @@ router.post("/", requireAuth, async (req, res) => {
     userId: user.id,
     body: body.trim(),
   });
+
+  // Notify track creator (fire-and-forget)
+  db.select({
+    creatorUserId: creatorProfilesTable.userId,
+    creatorSlug: creatorProfilesTable.slug,
+  })
+    .from(tracksTable)
+    .leftJoin(creatorProfilesTable, eq(tracksTable.creatorId, creatorProfilesTable.id))
+    .where(eq(tracksTable.id, track[0].id))
+    .limit(1)
+    .then(([row]) => {
+      if (row?.creatorUserId && row.creatorUserId !== user.id) {
+        const actorName = user.email.split('@')[0];
+        notify({
+          userId: row.creatorUserId,
+          type: 'comment',
+          title: `${actorName} commented on your track`,
+          body: body.trim().slice(0, 80),
+          trackSlug: slug,
+        });
+      }
+    });
 
   res.json({ id, message: "Comment posted" });
 });

@@ -6,6 +6,23 @@ import {
 import { eq, and, sql, inArray, desc, count } from "drizzle-orm";
 import { requireAuth } from "../lib/auth";
 import { generateId } from "../lib/id";
+import { notify } from "../lib/notify";
+
+async function getTrackCreator(trackId: string) {
+  const [row] = await db
+    .select({
+      trackSlug: tracksTable.slug,
+      trackTitle: tracksTable.title,
+      creatorUserId: creatorProfilesTable.userId,
+      creatorSlug: creatorProfilesTable.slug,
+      creatorName: creatorProfilesTable.artistName,
+    })
+    .from(tracksTable)
+    .leftJoin(creatorProfilesTable, eq(tracksTable.creatorId, creatorProfilesTable.id))
+    .where(eq(tracksTable.id, trackId))
+    .limit(1);
+  return row ?? null;
+}
 
 const router = Router();
 
@@ -19,6 +36,20 @@ router.post("/likes/:trackId", requireAuth, async (req, res) => {
 
   await db.insert(likesTable).values({ id: generateId(), userId: user.id, trackId });
   await db.update(tracksTable).set({ likeCount: sql`${tracksTable.likeCount} + 1` }).where(eq(tracksTable.id, trackId));
+
+  // Notify track creator (fire-and-forget)
+  getTrackCreator(trackId).then(tc => {
+    if (tc?.creatorUserId && tc.creatorUserId !== user.id) {
+      const actorName = user.email.split('@')[0];
+      notify({
+        userId: tc.creatorUserId,
+        type: 'like',
+        title: `${actorName} liked your track`,
+        body: tc.trackTitle,
+        trackSlug: tc.trackSlug ?? undefined,
+      });
+    }
+  });
 
   res.json({ message: "Liked" });
 });
@@ -76,6 +107,24 @@ router.post("/follows/:creatorId", requireAuth, async (req, res) => {
   if (existing[0]) return res.json({ message: "Already following" });
 
   await db.insert(followsTable).values({ id: generateId(), followerUserId: user.id, creatorId });
+
+  // Notify the creator (fire-and-forget)
+  db.select({ userId: creatorProfilesTable.userId, slug: creatorProfilesTable.slug, artistName: creatorProfilesTable.artistName })
+    .from(creatorProfilesTable)
+    .where(eq(creatorProfilesTable.id, creatorId))
+    .limit(1)
+    .then(([creator]) => {
+      if (creator && creator.userId !== user.id) {
+        const actorName = user.email.split('@')[0];
+        notify({
+          userId: creator.userId,
+          type: 'follow',
+          title: `${actorName} started following you`,
+          body: `You have a new follower on Sound2Soul`,
+          creatorSlug: creator.slug ?? undefined,
+        });
+      }
+    });
 
   res.json({ message: "Following" });
 });
@@ -246,6 +295,20 @@ router.post("/reposts/:trackId", requireAuth, async (req, res) => {
     userId: user.id,
     trackId,
     note: req.body.note || null,
+  });
+
+  // Notify track creator (fire-and-forget)
+  getTrackCreator(trackId).then(tc => {
+    if (tc?.creatorUserId && tc.creatorUserId !== user.id) {
+      const actorName = user.email.split('@')[0];
+      notify({
+        userId: tc.creatorUserId,
+        type: 'repost',
+        title: `${actorName} reposted your track`,
+        body: tc.trackTitle,
+        trackSlug: tc.trackSlug ?? undefined,
+      });
+    }
   });
 
   res.json({ message: "Reposted" });
