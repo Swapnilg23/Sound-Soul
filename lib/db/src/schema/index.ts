@@ -9,3 +9,6 @@ export * from "./notifications";
 export * from "./play-events";
 export * from "./comments";
 export * from "./reposts";
+export * from "./playlists";
+export * from "./listen-history";
+export * from "./soul-stories";

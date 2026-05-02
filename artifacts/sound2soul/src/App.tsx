@@ -21,17 +21,16 @@ import TrackDetail from "@/pages/track";
 import Library from "@/pages/library";
 import Leaderboard from "@/pages/leaderboard";
 import AdminDashboard from "@/pages/admin";
+import SoulRadio from "@/pages/radio";
+import CollectionPage from "@/pages/collection";
 
 const queryClient = new QueryClient();
 
-// Protected Route Component
 const ProtectedRoute = ({ component: Component, role, ...rest }: any) => {
   const { user, isLoading } = useAuth();
-  
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div></div>;
   if (!user) return <Redirect to="/login" />;
   if (role && user.role !== role && user.role !== 'admin') return <Redirect to="/explore" />;
-  
   return <Component {...rest} />;
 };
 
@@ -46,6 +45,9 @@ function Router() {
         <Route path="/explore" component={Explore} />
         <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/track/:slug" component={TrackDetail} />
+        <Route path="/radio/:tag" component={SoulRadio} />
+        <Route path="/radio" component={SoulRadio} />
+        <Route path="/collection/:slug" component={CollectionPage} />
 
         {/* Listener Routes */}
         <Route path="/library">
@@ -68,7 +70,7 @@ function Router() {
         <Route path="/admin">
           {() => <ProtectedRoute component={AdminDashboard} role="admin" />}
         </Route>
-        
+
         <Route component={NotFound} />
       </Switch>
     </RootLayout>

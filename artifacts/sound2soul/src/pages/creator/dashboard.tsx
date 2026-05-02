@@ -7,10 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend,
+  Tooltip, ResponsiveContainer, Legend, RadarChart, PolarGrid,
+  PolarAngleAxis, Radar, AreaChart, Area,
 } from 'recharts';
+import { MapPin, Flame, TrendingUp, Clock, Star } from 'lucide-react';
 
-type Tab = 'overview' | 'analytics';
+type Tab = 'overview' | 'analytics' | 'insights';
 
 interface AnalyticsTrack {
   id: string;
@@ -23,6 +25,22 @@ interface AnalyticsTrack {
   likeCount: number;
   saveCount: number;
   weeklyPlays: { week: string; plays: number }[];
+}
+
+interface InsightsData {
+  soulScore: number;
+  totalPlays: number;
+  totalLikes: number;
+  totalSaves: number;
+  followerCount: number;
+  recentPlayCount: number;
+  topCities: { city: string; listeners: number; share: number }[];
+  peakHours: { hour: string; plays: number }[];
+  tracks: {
+    id: string; title: string; slug: string; coverImageUrl: string | null;
+    playCount: number; likeCount: number; saveCount: number; genre: string | null;
+    conversionRate: number; avgListenPct: number;
+  }[];
 }
 
 function useAnalytics() {
@@ -43,11 +61,31 @@ function useAnalytics() {
   return { data, isLoading };
 }
 
+function useInsights() {
+  const [data, setData] = useState<InsightsData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('sound2soul_token');
+    if (!token) return;
+    setIsLoading(true);
+    fetch('/api/insights', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setData(d); else setError(true); })
+      .catch(() => setError(true))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  return { data, isLoading, error };
+}
+
 export default function CreatorDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const { data: stats, isLoading: isStatsLoading } = useGetDashboardStats();
   const { data: tracksData, isLoading: isTracksLoading } = useGetMyTracks();
   const { data: analyticsData, isLoading: isAnalyticsLoading } = useAnalytics();
+  const { data: insightsData, isLoading: isInsightsLoading } = useInsights();
 
   return (
     <div className="min-h-[calc(100vh-4rem)] p-4 md:p-8 max-w-7xl mx-auto space-y-8">
@@ -63,7 +101,7 @@ export default function CreatorDashboard() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-white/8">
-        {(['overview', 'analytics'] as Tab[]).map(tab => (
+        {(['overview', 'analytics', 'insights'] as Tab[]).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -71,7 +109,7 @@ export default function CreatorDashboard() {
               activeTab === tab ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            {tab}
+            {tab === 'insights' ? '✦ Insights' : tab.charAt(0).toUpperCase() + tab.slice(1)}
             {activeTab === tab && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
             )}
@@ -90,6 +128,10 @@ export default function CreatorDashboard() {
 
       {activeTab === 'analytics' && (
         <AnalyticsTab data={analyticsData} isLoading={isAnalyticsLoading} />
+      )}
+
+      {activeTab === 'insights' && (
+        <InsightsTab data={insightsData} isLoading={isInsightsLoading} />
       )}
     </div>
   );
@@ -180,6 +222,213 @@ function OverviewTab({ stats, isStatsLoading, tracksData, isTracksLoading }: any
   );
 }
 
+function InsightsTab({ data, isLoading }: { data: InsightsData | null; isLoading: boolean }) {
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => <Skeleton key={i} className="h-28 rounded-xl" />)}
+        </div>
+        <Skeleton className="h-64 rounded-2xl" />
+        <div className="grid md:grid-cols-2 gap-6">
+          <Skeleton className="h-64 rounded-2xl" />
+          <Skeleton className="h-64 rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!data || data.tracks.length === 0) {
+    return (
+      <div className="py-20 text-center bg-card/20 rounded-2xl border border-white/5 border-dashed">
+        <div className="text-4xl mb-4 opacity-30">✦</div>
+        <p className="font-medium">No insights yet.</p>
+        <p className="text-sm text-muted-foreground mt-1 mb-6">Publish a track to start unlocking your Soul Score and listener data.</p>
+        <Link href="/creator/upload" className="text-sm text-primary hover:underline font-medium">Upload your first track →</Link>
+      </div>
+    );
+  }
+
+  const scoreColor = data.soulScore >= 10000 ? 'text-secondary' : data.soulScore >= 3000 ? 'text-primary' : 'text-muted-foreground';
+  const scoreLabel = data.soulScore >= 10000 ? 'Rising Star' : data.soulScore >= 3000 ? 'Growing' : 'Starting Out';
+
+  const topTrack = data.tracks[0];
+  const radarData = [
+    { metric: 'Plays', value: Math.min(100, Math.round(data.totalPlays / 30)) },
+    { metric: 'Likes', value: Math.min(100, Math.round(data.totalLikes / 10)) },
+    { metric: 'Saves', value: Math.min(100, Math.round(data.totalSaves / 5)) },
+    { metric: 'Followers', value: Math.min(100, data.followerCount * 10) },
+    { metric: 'Momentum', value: Math.min(100, Math.round(data.recentPlayCount / 5)) },
+  ];
+
+  const peakHour = data.peakHours.reduce((a, b) => a.plays > b.plays ? a : b);
+
+  return (
+    <div className="space-y-8">
+
+      {/* Soul Score hero */}
+      <Card className="bg-gradient-to-br from-primary/10 via-card/60 to-secondary/10 border-primary/20 overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        <CardContent className="p-6 flex flex-col md:flex-row items-center gap-6 relative z-10">
+          <div className="text-center md:text-left">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">Soul Score</p>
+            <div className={`text-6xl font-extrabold tabular-nums ${scoreColor}`}>
+              {data.soulScore.toLocaleString()}
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <Flame className="w-4 h-4 text-secondary" />
+              <span className="text-sm font-medium text-secondary">{scoreLabel}</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">plays×1 + likes×5 + saves×3 + followers×10</p>
+          </div>
+          <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-3 w-full">
+            <MiniStat label="30-day plays" value={data.recentPlayCount} />
+            <MiniStat label="Total likes" value={data.totalLikes} />
+            <MiniStat label="Total saves" value={data.totalSaves} />
+            <MiniStat label="Followers" value={data.followerCount} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Radar + Peak Hours row */}
+      <div className="grid md:grid-cols-2 gap-6">
+
+        {/* Radar chart — Engagement Profile */}
+        <Card className="bg-card/40 border-white/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <Star className="w-4 h-4 text-secondary" /> Engagement Profile
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">Your overall creator health across 5 dimensions</p>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={220}>
+              <RadarChart data={radarData} margin={{ top: 8, right: 24, bottom: 8, left: 24 }}>
+                <PolarGrid stroke="rgba(255,255,255,0.06)" />
+                <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
+                <Radar name="You" dataKey="value" stroke="hsl(262 72% 62%)" fill="hsl(262 72% 62%)" fillOpacity={0.25} strokeWidth={2} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Peak listening hours */}
+        <Card className="bg-card/40 border-white/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <Clock className="w-4 h-4 text-primary" /> Peak Listening Hours
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">Your listeners are most active around {peakHour.hour}</p>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={data.peakHours} margin={{ top: 4, right: 8, bottom: 4, left: -20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <XAxis dataKey="hour" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => v.slice(0,2)} axisLine={false} tickLine={false} interval={3} />
+                <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{ background: 'hsl(var(--card))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, fontSize: 12 }}
+                  labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
+                  cursor={{ stroke: 'rgba(255,255,255,0.1)' }}
+                />
+                <Area type="monotone" dataKey="plays" name="Plays" stroke="hsl(262 72% 62%)" fill="hsl(262 72% 62%)" fillOpacity={0.15} strokeWidth={2} dot={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Top Cities */}
+      <Card className="bg-card/40 border-white/5">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-secondary" /> Top Listener Cities
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">Where your audience is located (estimated)</p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {data.topCities.map((city, i) => (
+            <div key={city.city} className="flex items-center gap-4">
+              <span className="text-xs text-muted-foreground/50 w-4 tabular-nums">{i + 1}</span>
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{city.city}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">{city.listeners.toLocaleString()} listeners</span>
+                </div>
+                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-primary/70 to-secondary/70 rounded-full transition-all duration-700"
+                    style={{ width: `${city.share}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Track performance table with conversion */}
+      <Card className="bg-card/40 border-white/5">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" /> Track Performance
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">Conversion = % of track listeners who became followers</p>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/5 text-muted-foreground text-xs uppercase tracking-wider">
+                  <th className="text-left px-5 py-3 font-medium">Track</th>
+                  <th className="text-right px-4 py-3 font-medium">Plays</th>
+                  <th className="text-right px-4 py-3 font-medium">Avg Listen</th>
+                  <th className="text-right px-5 py-3 font-medium">Conversion</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.tracks.map((t, i) => (
+                  <tr key={t.id} className={`border-b border-white/5 hover:bg-white/2 transition-colors ${i === data.tracks.length - 1 ? 'border-0' : ''}`}>
+                    <td className="px-5 py-3.5">
+                      <Link href={`/track/${t.slug}`} className="flex items-center gap-3 group">
+                        <div className="w-9 h-9 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                          {t.coverImageUrl ? (
+                            <img src={t.coverImageUrl} alt={t.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-primary/20 flex items-center justify-center text-xs text-primary/40">♫</div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium truncate group-hover:text-primary transition-colors">{t.title}</p>
+                          <p className="text-xs text-muted-foreground">{t.genre || '—'}</p>
+                        </div>
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3.5 text-right tabular-nums">{t.playCount.toLocaleString()}</td>
+                    <td className="px-4 py-3.5 text-right tabular-nums">
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="w-16 h-1 bg-white/8 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary/60 rounded-full" style={{ width: `${t.avgListenPct}%` }} />
+                        </div>
+                        <span className="text-xs text-muted-foreground">{t.avgListenPct}%</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5 text-right tabular-nums">
+                      <span className={`text-xs font-semibold ${t.conversionRate > 5 ? 'text-secondary' : t.conversionRate > 2 ? 'text-primary' : 'text-muted-foreground'}`}>
+                        {t.conversionRate}%
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 function AnalyticsTab({ data, isLoading }: { data: AnalyticsTrack[] | null; isLoading: boolean }) {
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
 
@@ -210,7 +459,6 @@ function AnalyticsTab({ data, isLoading }: { data: AnalyticsTrack[] | null; isLo
     );
   }
 
-  // Build comparison chart data (all tracks side-by-side)
   const comparisonData = approved.map(t => ({
     name: t.title.length > 20 ? t.title.slice(0, 18) + '…' : t.title,
     Plays: t.playCount,
@@ -218,18 +466,14 @@ function AnalyticsTab({ data, isLoading }: { data: AnalyticsTrack[] | null; isLo
     Saves: t.saveCount,
   }));
 
-  // Build weekly trend data for selected track
   const weeklyData = buildWeeklyData(selectedTrack?.weeklyPlays ?? []);
 
-  // Top performer
   const topTrack = [...approved].sort((a, b) => b.playCount - a.playCount)[0];
   const totalPlays = approved.reduce((s, t) => s + t.playCount, 0);
   const totalLikes = approved.reduce((s, t) => s + t.likeCount, 0);
 
   return (
     <div className="space-y-8">
-
-      {/* Summary row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MiniStat label="Total Plays" value={totalPlays} />
         <MiniStat label="Total Likes" value={totalLikes} />
@@ -237,7 +481,6 @@ function AnalyticsTab({ data, isLoading }: { data: AnalyticsTrack[] | null; isLo
         <MiniStat label="Published" value={approved.length} />
       </div>
 
-      {/* Top performer */}
       {topTrack && (
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="p-5 flex items-center gap-4">
@@ -257,7 +500,6 @@ function AnalyticsTab({ data, isLoading }: { data: AnalyticsTrack[] | null; isLo
         </Card>
       )}
 
-      {/* Comparison chart */}
       {comparisonData.length > 0 && (
         <Card className="bg-card/40 border-white/5">
           <CardHeader className="pb-2">
@@ -270,11 +512,7 @@ function AnalyticsTab({ data, isLoading }: { data: AnalyticsTrack[] | null; isLo
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ background: 'hsl(var(--card))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, fontSize: 12 }}
-                  labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
-                  cursor={{ fill: 'rgba(255,255,255,0.03)' }}
-                />
+                <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, fontSize: 12 }} labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
                 <Legend wrapperStyle={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }} />
                 <Bar dataKey="Plays" fill="hsl(262 72% 62%)" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="Likes" fill="hsl(38 92% 58%)" radius={[4, 4, 0, 0]} />
@@ -285,7 +523,6 @@ function AnalyticsTab({ data, isLoading }: { data: AnalyticsTrack[] | null; isLo
         </Card>
       )}
 
-      {/* Weekly trend for selected track */}
       <Card className="bg-card/40 border-white/5">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between flex-wrap gap-3">
@@ -317,27 +554,14 @@ function AnalyticsTab({ data, isLoading }: { data: AnalyticsTrack[] | null; isLo
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                 <XAxis dataKey="week" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip
-                  contentStyle={{ background: 'hsl(var(--card))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, fontSize: 12 }}
-                  labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
-                  cursor={{ stroke: 'rgba(255,255,255,0.1)' }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="plays"
-                  name="Plays"
-                  stroke="hsl(262 72% 62%)"
-                  strokeWidth={2.5}
-                  dot={{ r: 4, fill: 'hsl(262 72% 62%)', strokeWidth: 0 }}
-                  activeDot={{ r: 6 }}
-                />
+                <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, fontSize: 12 }} labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }} cursor={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                <Line type="monotone" dataKey="plays" name="Plays" stroke="hsl(262 72% 62%)" strokeWidth={2.5} dot={{ r: 4, fill: 'hsl(262 72% 62%)', strokeWidth: 0 }} activeDot={{ r: 6 }} />
               </LineChart>
             </ResponsiveContainer>
           )}
         </CardContent>
       </Card>
 
-      {/* Per-track breakdown table */}
       <Card className="bg-card/40 border-white/5">
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">All Tracks</CardTitle>
@@ -398,7 +622,6 @@ function AnalyticsTab({ data, isLoading }: { data: AnalyticsTrack[] | null; isLo
 
 function buildWeeklyData(weeklyPlays: { week: string; plays: number }[]) {
   if (weeklyPlays.length === 0) return [];
-  // Format week label as "Apr 28"
   return weeklyPlays.map(w => ({
     week: new Date(w.week).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     plays: w.plays,
@@ -411,9 +634,7 @@ function StatCard({ title, value, icon }: { title: string; value: number | strin
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-          <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm">
-            {icon}
-          </div>
+          <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm">{icon}</div>
         </div>
         <div className="text-3xl font-bold">{typeof value === 'number' ? value.toLocaleString() : value}</div>
       </CardContent>

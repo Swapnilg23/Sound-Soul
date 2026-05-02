@@ -15,6 +15,11 @@ import notificationsRouter from "./notifications";
 import analyticsRouter from "./analytics";
 import leaderboardRouter from "./leaderboard";
 import homepageRouter from "./homepage";
+import radioRouter from "./radio";
+import playlistsRouter from "./playlists";
+import historyRouter from "./history";
+import insightsRouter from "./insights";
+import soulStoriesRouter from "./soul-stories";
 
 const router: IRouter = Router();
 
@@ -22,6 +27,7 @@ router.use(healthRouter);
 router.use("/auth", authRouter);
 router.use("/creators", creatorsRouter);
 router.use("/tracks", tracksRouter);
+router.use("/tracks/:slug/soul-stories", soulStoriesRouter);
 router.use("/explore", exploreRouter);
 router.use("/dashboard", dashboardRouter);
 router.use(interactionsRouter);
@@ -34,5 +40,9 @@ router.use("/notifications", notificationsRouter);
 router.use("/analytics", analyticsRouter);
 router.use("/leaderboard", leaderboardRouter);
 router.use("/homepage", homepageRouter);
+router.use("/radio", radioRouter);
+router.use("/playlists", playlistsRouter);
+router.use("/history", historyRouter);
+router.use("/insights", insightsRouter);
 
 export default router;
