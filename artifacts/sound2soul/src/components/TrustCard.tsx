@@ -1,74 +1,95 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Info, CheckCircle2, FileText } from 'lucide-react';
+import { calculateTrackDisclosure } from '@/lib/trustScore';
+import { TrackDisclosureBadge } from '@/components/TrustScoreBadge';
 
 interface TrustCardProps {
   aiInvolvementType?: string;
   humanContributionChecklist?: Record<string, unknown>;
   rightsConfirmation?: Record<string, unknown>;
+  soulStory?: string;
 }
 
-export const TrustCard: React.FC<TrustCardProps> = ({ 
-  aiInvolvementType, 
+export const TrustCard: React.FC<TrustCardProps> = ({
+  aiInvolvementType,
   humanContributionChecklist,
-  rightsConfirmation 
+  rightsConfirmation,
+  soulStory,
 }) => {
+  const disclosure = calculateTrackDisclosure({
+    aiInvolvementType,
+    rightsConfirmation,
+    soulStory,
+  });
+
   return (
     <Card className="bg-card/40 border-white/10 shadow-lg relative overflow-hidden">
-      {/* Decorative gradient blur */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-      
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/8 rounded-full blur-3xl pointer-events-none" />
+
       <CardHeader className="pb-3 border-b border-white/5">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <CheckCircle2 className="w-5 h-5 text-primary" />
-          Trust & Transparency
+        <CardTitle className="text-base flex items-center gap-2">
+          <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          Trust &amp; Transparency
         </CardTitle>
       </CardHeader>
-      
-      <CardContent className="pt-4 space-y-6">
-        
-        {/* AI Disclosure */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium flex items-center gap-2">
-              <Info className="w-4 h-4 text-muted-foreground" />
-              AI Process Disclosed
-            </span>
-            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-              {aiInvolvementType || 'Not specified'}
-            </Badge>
+
+      <CardContent className="pt-4 space-y-5">
+
+        {/* Disclosure score badge */}
+        <TrackDisclosureBadge disclosure={disclosure} />
+
+        {/* AI Involvement */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            AI Involvement
+          </div>
+          <div className="bg-primary/10 text-primary text-sm font-medium px-3 py-2 rounded-xl border border-primary/20">
+            {aiInvolvementType || 'Not specified'}
           </div>
         </div>
 
-        {/* Human Contribution */}
-        <div className="space-y-2">
-          <span className="text-sm font-medium flex items-center gap-2">
-            <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-            Human Contribution Details
-          </span>
-          <div className="bg-background/50 rounded-md p-3 text-sm text-muted-foreground border border-white/5">
-            {humanContributionChecklist && Object.keys(humanContributionChecklist).length > 0 
+        {/* Human contribution */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            Human Contribution
+          </div>
+          <div className="bg-background/50 rounded-xl p-3 text-sm text-muted-foreground border border-white/6">
+            {humanContributionChecklist && Object.keys(humanContributionChecklist).length > 0
               ? 'Human curation and editing confirmed by creator.'
-              : 'Detailed human contributions have been verified by the creator.'}
+              : 'Creator has verified their human contributions.'}
           </div>
         </div>
 
         {/* Rights */}
-        <div className="space-y-2">
-          <span className="text-sm font-medium flex items-center gap-2">
-            <FileText className="w-4 h-4 text-muted-foreground" />
-            Creator-certified rights
-          </span>
-          <div className="bg-secondary/10 text-secondary rounded-md p-3 text-sm border border-secondary/20 font-medium">
-            Rights to publish confirmed
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Creator-Certified Rights
+          </div>
+          <div className={`rounded-xl p-3 text-sm font-medium border
+            ${disclosure.hasRights
+              ? 'bg-secondary/10 text-secondary border-secondary/20'
+              : 'bg-white/4 text-muted-foreground border-white/6'
+            }`}
+          >
+            {disclosure.hasRights ? 'Rights to publish confirmed' : 'Rights not yet confirmed'}
           </div>
         </div>
 
         {/* Disclaimer */}
-        <div className="text-xs text-muted-foreground/60 pt-2 border-t border-white/5">
+        <p className="text-[11px] text-muted-foreground/50 pt-1 border-t border-white/5 leading-relaxed">
           This information is provided by the creator. Sound2Soul does not provide legal clearance or copyright verification.
-        </div>
+        </p>
       </CardContent>
     </Card>
   );
