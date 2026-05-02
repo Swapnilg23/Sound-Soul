@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { fanEmailsTable } from "@workspace/db";
-import { eq, count } from "drizzle-orm";
+import { fanEmailsTable, creatorProfilesTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import { requireCreator } from "../lib/auth";
 import { generateId } from "../lib/id";
+import { notify } from "../lib/notify";
 
 const router = Router();
 
@@ -22,6 +23,23 @@ router.post("/", async (req, res) => {
     consent: Boolean(consent),
     source: source || "track_page",
   });
+
+  // Notify the creator (fire-and-forget)
+  db.select({ userId: creatorProfilesTable.userId })
+    .from(creatorProfilesTable)
+    .where(eq(creatorProfilesTable.id, creatorId))
+    .limit(1)
+    .then(([cp]) => {
+      if (cp?.userId) {
+        const maskedEmail = email.replace(/(.{2}).*@/, '$1***@');
+        notify({
+          userId: cp.userId,
+          type: 'fan_email',
+          title: 'New fan joined your list',
+          body: maskedEmail,
+        });
+      }
+    });
 
   res.status(201).json({ message: "Successfully subscribed to fan list" });
 });

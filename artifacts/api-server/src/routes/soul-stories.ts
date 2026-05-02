@@ -6,6 +6,7 @@ import {
 import { eq, and, desc } from "drizzle-orm";
 import { requireAuth, optionalAuth } from "../lib/auth";
 import { generateId } from "../lib/id";
+import { notify } from "../lib/notify";
 
 const router = Router({ mergeParams: true });
 
@@ -77,6 +78,25 @@ router.post("/", requireAuth, async (req, res) => {
     id: generateId(), trackId: track.id, userId: user.id, body: body.trim(),
     isPinned: false, createdAt: new Date(),
   });
+
+  // Notify track creator (fire-and-forget)
+  db.select({ userId: creatorProfilesTable.userId, slug: creatorProfilesTable.slug })
+    .from(tracksTable)
+    .leftJoin(creatorProfilesTable, eq(tracksTable.creatorId, creatorProfilesTable.id))
+    .where(eq(tracksTable.id, track.id))
+    .limit(1)
+    .then(([row]) => {
+      if (row?.userId && row.userId !== user.id) {
+        const actorName = user.email.split('@')[0];
+        notify({
+          userId: row.userId,
+          type: 'soul_story',
+          title: `${actorName} shared a Soul Story`,
+          body: `on "${track.title}"`,
+          trackSlug: slug,
+        });
+      }
+    });
 
   res.status(201).json({ message: "Submitted" });
 });

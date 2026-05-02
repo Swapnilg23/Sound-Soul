@@ -75,6 +75,20 @@ router.post("/saves/:trackId", requireAuth, async (req, res) => {
   await db.insert(savesTable).values({ id: generateId(), userId: user.id, trackId });
   await db.update(tracksTable).set({ saveCount: sql`${tracksTable.saveCount} + 1` }).where(eq(tracksTable.id, trackId));
 
+  // Notify track creator (fire-and-forget)
+  getTrackCreator(trackId).then(tc => {
+    if (tc?.creatorUserId && tc.creatorUserId !== user.id) {
+      const actorName = user.email.split('@')[0];
+      notify({
+        userId: tc.creatorUserId,
+        type: 'save',
+        title: `${actorName} saved your track`,
+        body: tc.trackTitle,
+        trackSlug: tc.trackSlug ?? undefined,
+      });
+    }
+  });
+
   res.json({ message: "Saved" });
 });
 

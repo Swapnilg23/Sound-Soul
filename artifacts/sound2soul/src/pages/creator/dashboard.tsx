@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useGetDashboardStats, useGetMyTracks } from '@workspace/api-client-react';
 import { Link } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,10 +10,71 @@ import {
   Tooltip, ResponsiveContainer, Legend, RadarChart, PolarGrid,
   PolarAngleAxis, Radar, AreaChart, Area,
 } from 'recharts';
-import { MapPin, Flame, TrendingUp, Clock, Star, Sparkles, Check, ArrowRight } from 'lucide-react';
+import {
+  MapPin, Flame, TrendingUp, Clock, Star, Sparkles, Check, ArrowRight,
+  Bell, Heart, UserPlus, Bookmark, Mail, MessageSquare, Repeat2, BellOff,
+} from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 
-type Tab = 'overview' | 'analytics' | 'insights';
+type Tab = 'overview' | 'analytics' | 'insights' | 'activity';
+
+interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  trackSlug: string | null;
+  creatorSlug: string | null;
+  read: boolean;
+  createdAt: string;
+}
+
+function useNotifications() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const token = localStorage.getItem('sound2soul_token');
+
+  const fetchNotifications = useCallback(() => {
+    if (!token) return;
+    setIsLoading(true);
+    fetch('/api/notifications', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : [])
+      .then((rows: Notification[]) => {
+        setNotifications(rows);
+        setUnreadCount(rows.filter(n => !n.read).length);
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, [token]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  const markAllRead = useCallback(async () => {
+    if (!token) return;
+    await fetch('/api/notifications/read-all', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setUnreadCount(0);
+  }, [token]);
+
+  const markRead = useCallback(async (id: string) => {
+    if (!token) return;
+    await fetch(`/api/notifications/${id}/read`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    setUnreadCount(prev => Math.max(0, prev - 1));
+  }, [token]);
+
+  return { notifications, unreadCount, isLoading, markAllRead, markRead, refresh: fetchNotifications };
+}
 
 interface AnalyticsTrack {
   id: string;
@@ -88,6 +149,31 @@ export default function CreatorDashboard() {
   const { data: tracksData, isLoading: isTracksLoading } = useGetMyTracks();
   const { data: analyticsData, isLoading: isAnalyticsLoading } = useAnalytics();
   const { data: insightsData, isLoading: isInsightsLoading } = useInsights();
+  const { notifications, unreadCount, isLoading: isNotifLoading, markAllRead, markRead } = useNotifications();
+
+  // Mark notifications as read when Activity tab is opened
+  const handleTabClick = (tab: Tab) => {
+    setActiveTab(tab);
+    if (tab === 'activity' && unreadCount > 0) {
+      markAllRead();
+    }
+  };
+
+  const TAB_LABELS: Record<Tab, React.ReactNode> = {
+    overview: 'Overview',
+    analytics: 'Analytics',
+    insights: '✦ Insights',
+    activity: (
+      <span className="flex items-center gap-1.5">
+        Activity
+        {unreadCount > 0 && (
+          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-primary text-primary-foreground rounded-full leading-none">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        )}
+      </span>
+    ),
+  };
 
   return (
     <div className="min-h-[calc(100vh-4rem)] p-4 md:p-8 max-w-7xl mx-auto space-y-8">
@@ -110,15 +196,15 @@ export default function CreatorDashboard() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-white/8">
-        {(['overview', 'analytics', 'insights'] as Tab[]).map(tab => (
+        {(['overview', 'analytics', 'insights', 'activity'] as Tab[]).map(tab => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => handleTabClick(tab)}
             className={`px-5 py-2.5 text-sm font-medium capitalize transition-colors relative ${
               activeTab === tab ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            {tab === 'insights' ? '✦ Insights' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {TAB_LABELS[tab]}
             {activeTab === tab && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
             )}
@@ -142,6 +228,16 @@ export default function CreatorDashboard() {
 
       {activeTab === 'insights' && (
         <InsightsTab data={insightsData} isLoading={isInsightsLoading} />
+      )}
+
+      {activeTab === 'activity' && (
+        <ActivityTab
+          notifications={notifications}
+          isLoading={isNotifLoading}
+          markRead={markRead}
+          markAllRead={markAllRead}
+          unreadCount={unreadCount}
+        />
       )}
     </div>
   );
@@ -874,6 +970,202 @@ function AnalyticsTab({ data, isLoading }: { data: AnalyticsTrack[] | null; isLo
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// ── Activity Tab ──────────────────────────────────────────────────────────────
+
+const NOTIF_CONFIG: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
+  like:        { icon: Heart,        color: 'text-rose-400',    bg: 'bg-rose-500/10' },
+  save:        { icon: Bookmark,     color: 'text-cyan-400',    bg: 'bg-cyan-500/10' },
+  follow:      { icon: UserPlus,     color: 'text-violet-400',  bg: 'bg-violet-500/10' },
+  repost:      { icon: Repeat2,      color: 'text-blue-400',    bg: 'bg-blue-500/10' },
+  soul_story:  { icon: MessageSquare,color: 'text-amber-400',   bg: 'bg-amber-500/10' },
+  fan_email:   { icon: Mail,         color: 'text-green-400',   bg: 'bg-green-500/10' },
+};
+
+function timeAgo(isoDate: string) {
+  const diff = Date.now() - new Date(isoDate).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d}d ago`;
+  return new Date(isoDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+const TYPE_FILTERS = [
+  { value: 'all',        label: 'All' },
+  { value: 'follow',     label: 'Follows' },
+  { value: 'like',       label: 'Likes' },
+  { value: 'save',       label: 'Saves' },
+  { value: 'repost',     label: 'Reposts' },
+  { value: 'soul_story', label: 'Soul Stories' },
+  { value: 'fan_email',  label: 'Fan Signups' },
+];
+
+function ActivityTab({
+  notifications,
+  isLoading,
+  markRead,
+  markAllRead,
+  unreadCount,
+}: {
+  notifications: Notification[];
+  isLoading: boolean;
+  markRead: (id: string) => void;
+  markAllRead: () => void;
+  unreadCount: number;
+}) {
+  const [filter, setFilter] = useState<string>('all');
+
+  const filtered = filter === 'all'
+    ? notifications
+    : notifications.filter(n => n.type === filter);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3, 4, 5].map(i => (
+          <Skeleton key={i} className="h-16 w-full rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+
+      {/* Header row */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <Bell className="h-5 w-5 text-primary" />
+            Activity Feed
+          </h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {notifications.length === 0
+              ? 'No activity yet — engage with your audience to see events here.'
+              : `${notifications.length} recent event${notifications.length !== 1 ? 's' : ''}`}
+          </p>
+        </div>
+        {unreadCount > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={markAllRead}
+            className="border-white/10 text-muted-foreground hover:text-foreground gap-2 self-start sm:self-auto"
+          >
+            <Check className="h-3.5 w-3.5" />
+            Mark all read
+          </Button>
+        )}
+      </div>
+
+      {/* Type filter pills */}
+      {notifications.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {TYPE_FILTERS.map(f => {
+            const count = f.value === 'all'
+              ? notifications.length
+              : notifications.filter(n => n.type === f.value).length;
+            if (f.value !== 'all' && count === 0) return null;
+            return (
+              <button
+                key={f.value}
+                onClick={() => setFilter(f.value)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  filter === f.value
+                    ? 'bg-primary/20 border-primary/50 text-primary'
+                    : 'bg-white/3 border-white/8 text-muted-foreground hover:border-white/20 hover:text-foreground'
+                }`}
+              >
+                {f.label}
+                {count > 0 && (
+                  <span className={`ml-1.5 tabular-nums ${filter === f.value ? 'text-primary/70' : 'text-muted-foreground/50'}`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Empty states */}
+      {notifications.length === 0 ? (
+        <div className="py-20 text-center rounded-2xl border border-white/5 border-dashed bg-card/20">
+          <div className="w-14 h-14 rounded-full bg-muted/20 flex items-center justify-center mx-auto mb-4">
+            <BellOff className="h-6 w-6 text-muted-foreground/40" />
+          </div>
+          <p className="font-medium text-muted-foreground">No activity yet</p>
+          <p className="text-sm text-muted-foreground/60 mt-1 max-w-xs mx-auto">
+            When listeners follow you, like your tracks, or sign up for your fan list, you'll see it here.
+          </p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="py-14 text-center rounded-2xl border border-white/5 border-dashed bg-card/20">
+          <p className="text-muted-foreground text-sm">No {filter.replace('_', ' ')} events yet.</p>
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-white/8 overflow-hidden divide-y divide-white/5">
+          {filtered.map(notif => {
+            const cfg = NOTIF_CONFIG[notif.type] ?? { icon: Bell, color: 'text-muted-foreground', bg: 'bg-white/5' };
+            const Icon = cfg.icon;
+
+            const linkHref = notif.trackSlug
+              ? `/track/${notif.trackSlug}`
+              : notif.creatorSlug
+              ? `/creator/${notif.creatorSlug}`
+              : null;
+
+            return (
+              <div
+                key={notif.id}
+                className={`flex items-start gap-4 px-5 py-4 transition-colors ${
+                  notif.read ? 'bg-transparent' : 'bg-primary/3 hover:bg-primary/5'
+                }`}
+                onClick={() => !notif.read && markRead(notif.id)}
+              >
+                {/* Icon */}
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${cfg.bg}`}>
+                  <Icon className={`h-4 w-4 ${cfg.color}`} />
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-medium leading-snug ${notif.read ? 'text-muted-foreground' : 'text-foreground'}`}>
+                    {notif.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{notif.body}</p>
+                  {linkHref && (
+                    <Link
+                      href={linkHref}
+                      className="inline-flex items-center gap-1 text-xs text-primary/70 hover:text-primary mt-1.5 transition-colors"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      View <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  )}
+                </div>
+
+                {/* Right side — time + unread dot */}
+                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                  <span className="text-[11px] text-muted-foreground/50 whitespace-nowrap">
+                    {timeAgo(notif.createdAt)}
+                  </span>
+                  {!notif.read && (
+                    <span className="w-2 h-2 rounded-full bg-primary" />
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
