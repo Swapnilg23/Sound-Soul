@@ -11,6 +11,7 @@ import reportsRouter from "./reports";
 import waitlistRouter from "./waitlist";
 import uploadRouter from "./upload";
 import adminRouter from "./admin";
+import notificationsRouter from "./notifications";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use("/reports", reportsRouter);
 router.use("/waitlist", waitlistRouter);
 router.use("/upload", uploadRouter);
 router.use("/admin", adminRouter);
+router.use("/notifications", notificationsRouter);
 
 export default router;

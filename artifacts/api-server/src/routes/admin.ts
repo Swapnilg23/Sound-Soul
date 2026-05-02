@@ -3,8 +3,10 @@ import { db } from "@workspace/db";
 import {
   usersTable, creatorProfilesTable, tracksTable, reportsTable,
   fanEmailsTable, proWaitlistTable, likesTable, savesTable,
+  followsTable, notificationsTable,
 } from "@workspace/db";
 import { eq, count, sum, and } from "drizzle-orm";
+import { generateId } from "../lib/id";
 import { requireAdmin } from "../lib/auth";
 
 const router = Router();
@@ -77,7 +79,43 @@ router.get("/tracks", requireAdmin, async (req, res) => {
 
 router.post("/tracks/:trackId/approve", requireAdmin, async (req, res) => {
   const { trackId } = req.params;
+
   await db.update(tracksTable).set({ moderationStatus: "approved" }).where(eq(tracksTable.id, trackId));
+
+  // Fan out notifications to all followers of this creator
+  try {
+    const [trackRow] = await db
+      .select({ track: tracksTable, creator: creatorProfilesTable })
+      .from(tracksTable)
+      .leftJoin(creatorProfilesTable, eq(tracksTable.creatorId, creatorProfilesTable.id))
+      .where(eq(tracksTable.id, trackId))
+      .limit(1);
+
+    if (trackRow?.creator && trackRow?.track) {
+      const followers = await db
+        .select({ followerUserId: followsTable.followerUserId })
+        .from(followsTable)
+        .where(eq(followsTable.creatorId, trackRow.creator.id));
+
+      if (followers.length > 0) {
+        await db.insert(notificationsTable).values(
+          followers.map(f => ({
+            id: generateId(),
+            userId: f.followerUserId,
+            type: "new_track",
+            title: `${trackRow.creator!.artistName} dropped a new track`,
+            body: trackRow.track.title,
+            trackSlug: trackRow.track.slug,
+            creatorSlug: trackRow.creator!.slug,
+            read: false,
+          }))
+        );
+      }
+    }
+  } catch (err) {
+    req.log.error({ err }, "Failed to fan out notifications for approved track");
+  }
+
   res.json({ message: "Track approved" });
 });
 

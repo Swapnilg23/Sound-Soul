@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLogout } from '@workspace/api-client-react';
+import { NotificationBell } from '@/components/NotificationBell';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -62,6 +63,7 @@ export const Navbar: React.FC = () => {
               <Link href="/library" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 hidden md:block">
                 Library
               </Link>
+              <NotificationBell />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="relative h-8 w-8 rounded-full ring-2 ring-white/10 hover:ring-primary/50 transition-all duration-150 overflow-hidden">
