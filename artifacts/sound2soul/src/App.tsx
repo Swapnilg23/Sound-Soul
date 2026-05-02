@@ -24,6 +24,10 @@ import AdminDashboard from "@/pages/admin";
 import SoulRadio from "@/pages/radio";
 import CollectionPage from "@/pages/collection";
 import SoulWrapped from "@/pages/creator/wrapped";
+import TermsOfService from "@/pages/legal/terms";
+import PrivacyPolicy from "@/pages/legal/privacy";
+import AIUsagePolicy from "@/pages/legal/ai-policy";
+import CreatorGuidelines from "@/pages/legal/creator-guidelines";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +78,12 @@ function Router() {
         <Route path="/admin">
           {() => <ProtectedRoute component={AdminDashboard} role="admin" />}
         </Route>
+
+        {/* Legal pages — open in new tab via footer links */}
+        <Route path="/legal/terms" component={TermsOfService} />
+        <Route path="/legal/privacy" component={PrivacyPolicy} />
+        <Route path="/legal/ai-policy" component={AIUsagePolicy} />
+        <Route path="/legal/creator-guidelines" component={CreatorGuidelines} />
 
         <Route component={NotFound} />
       </Switch>

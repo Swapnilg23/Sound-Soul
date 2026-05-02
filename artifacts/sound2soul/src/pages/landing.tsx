@@ -1,7 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useAuth } from '@/lib/auth';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SiteFooter } from '@/components/layout/SiteFooter';
+import { ChevronDown } from 'lucide-react';
+
+const FAQ_ITEMS = [
+  {
+    q: 'Do I need to use AI to create music here?',
+    a: 'No. Sound2Soul welcomes all creators — whether you use AI tools or create entirely by hand. The platform is built for trust-first publishing, not any specific production method. Human-made music is celebrated just as much as AI-assisted work.',
+  },
+  {
+    q: 'What does "AI Disclosed" mean on a track?',
+    a: 'When creators upload a track, they declare exactly how AI was involved — from "no AI" to "fully AI-generated." This badge gives listeners honest context about the creative process. Transparency is the foundation Sound2Soul is built on.',
+  },
+  {
+    q: 'Who owns my music after I publish it?',
+    a: 'You do. Sound2Soul does not claim ownership of your tracks. By publishing, you grant us a limited, non-exclusive licence to stream and display your music on the platform. You can remove your content at any time.',
+  },
+  {
+    q: 'Can I make money from my music on Sound2Soul?',
+    a: 'Monetisation tools for creators are in active development — including fan support, premium collections, and licensing pathways. We\'ll notify creators when these launch. Building your audience now means you\'ll be ready.',
+  },
+  {
+    q: 'What is a Soul Story?',
+    a: 'A Soul Story is your track\'s emotional origin — the memory, feeling, or moment that inspired its creation. It\'s the human layer behind the music. Listeners can also contribute their own Soul Stories to tracks they connect with.',
+  },
+  {
+    q: 'How is Soul Score calculated?',
+    a: 'Soul Score is your influence metric on Sound2Soul. It combines plays (×1), likes (×5), saves (×3), and followers (×10) into a single number. It grows as your community does — and resets to reflect your ongoing momentum.',
+  },
+  {
+    q: 'How does fan collection work?',
+    a: 'Listeners can follow creators, save tracks to their Library, and join a creator\'s mailing list directly from the track page. Creators own their fan relationships — Sound2Soul is the platform where those relationships form.',
+  },
+  {
+    q: 'How do I report content that violates the rules?',
+    a: 'Every track page has a report button. Our moderation team reviews all reports within 48 hours. Creators who repeatedly violate our Creator Guidelines are removed from the platform.',
+  },
+];
 
 const ROTATING_WORDS = ['trust', 'audience', 'identity', 'legacy', 'fanbase'];
 
@@ -310,6 +347,21 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── FAQ ── */}
+      <section className="py-24 border-t border-white/5">
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="text-center mb-14 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary/70">Got questions?</p>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Frequently asked</h2>
+          </div>
+          <div className="divide-y divide-white/6">
+            {FAQ_ITEMS.map((item, i) => (
+              <FAQItem key={i} question={item.q} answer={item.a} />
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="py-24 border-t border-white/5">
         <div className="max-w-2xl mx-auto px-6 text-center space-y-6">
@@ -332,17 +384,44 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="py-10 border-t border-white/8 mt-auto">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <span className="text-base font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Sound2Soul
-          </span>
-          <p className="text-xs text-muted-foreground/40">
-            &copy; {new Date().getFullYear()} Sound2Soul. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      {/* ── Site Footer ── */}
+      <SiteFooter />
+    </div>
+  );
+}
+
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="py-5">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between gap-4 text-left group"
+        aria-expanded={open}
+      >
+        <span className="text-base font-medium text-foreground group-hover:text-primary transition-colors duration-150">
+          {question}
+        </span>
+        <ChevronDown
+          className={`h-5 w-5 text-muted-foreground flex-shrink-0 transition-transform duration-300 ${open ? 'rotate-180 text-primary' : ''}`}
+        />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="answer"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.28, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <p className="pt-3 pb-1 text-sm text-muted-foreground leading-relaxed max-w-2xl">
+              {answer}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

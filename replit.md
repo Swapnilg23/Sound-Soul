@@ -90,9 +90,29 @@ After updating `lib/api-spec/openapi.yaml`:
 pnpm --filter @workspace/api-spec run codegen
 ```
 
+## Recent Features (MVP+)
+
+- **Soul Radio** — `/radio/:tag` genre/mood radio stations with shuffle + reshuffle
+- **Soul Collections** — `/collection/:slug` playlists; "Add to Collection" from track page; Library → Collections tab
+- **Recently Played History** — `/api/history`; Library → History tab (last 30 tracks, auth-required)
+- **Creator Insights v2** — Dashboard → ✦ Insights tab: Soul Score, radar chart, peak hours, top cities, conversion
+- **Collaborative Soul Stories** — `/api/tracks/:slug/soul-stories`; track page section below Soul Story
+- **Soul Wrapped** — `/creator/wrapped`: yearly creator recap (top track, Soul Score growth, monthly plays chart, top city, share link)
+- **FAQ Section** — Landing page accordion with 8 Sound2Soul-specific questions, animated expand/collapse
+- **Site Footer** — Full 5-column footer (Discover, Create, Community, Support, Legal) with social icons (X, Instagram, Discord, TikTok); all external/legal links open in new tab
+- **Legal Pages** — `/legal/terms`, `/legal/privacy`, `/legal/ai-policy`, `/legal/creator-guidelines` — full content, violet/amber branded; open via `target="_blank"` from footer
+
+## DB Tables Added (MVP+)
+
+- `playlists` — id, user_id, title, slug, description, is_public
+- `playlist_tracks` — playlist_id, track_id, position
+- `listen_history` — id, user_id, track_id, listened_at
+- `soul_stories` — id, track_id, user_id, content (200 chars max), is_pinned, UNIQUE(track_id, user_id)
+
 ## Design
 
 - Dark mode-first, deep midnight backgrounds (`#080810`)
 - Warm violet (`#7c3aed`) and amber (`#f59e0b`) accents
 - Cinematic feel, no emojis
 - Mobile-friendly responsive layout
+- All legal links open `target="_blank"` (new window/tab)
