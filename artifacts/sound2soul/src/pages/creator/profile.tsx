@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { calculateTrustScore } from '@/lib/trustScore';
 import { TrustScoreBadge } from '@/components/TrustScoreBadge';
+import { TrustScoreNudge } from '@/components/TrustScoreNudge';
 
 export default function CreatorProfile() {
   const [, params] = useRoute('/creator/:slug');
@@ -28,6 +29,15 @@ export default function CreatorProfile() {
     return <div className="text-center py-20 text-xl text-muted-foreground">Creator not found</div>;
   }
 
+  const isOwnProfile = !!user && user.role === 'creator' && (user as any).creatorProfile?.slug === slug;
+
+  const tracksForScore = (tracksData || []).map(t => ({
+    aiInvolvementType: t.aiInvolvementType,
+    rightsConfirmation: t.rightsConfirmation as Record<string, unknown> | null,
+    soulStory: t.soulStory,
+    humanContributionChecklist: t.humanContributionChecklist as Record<string, unknown> | null,
+  }));
+
   const trustScore = calculateTrustScore({
     profile: {
       bio: profile.bio,
@@ -37,12 +47,7 @@ export default function CreatorProfile() {
       genres: profile.genres,
       aiToolsUsed: profile.aiToolsUsed,
     },
-    tracks: (tracksData || []).map(t => ({
-      aiInvolvementType: t.aiInvolvementType,
-      rightsConfirmation: t.rightsConfirmation as Record<string, unknown> | null,
-      soulStory: t.soulStory,
-      humanContributionChecklist: t.humanContributionChecklist as Record<string, unknown> | null,
-    })),
+    tracks: tracksForScore,
   });
 
   return (
@@ -85,7 +90,29 @@ export default function CreatorProfile() {
               <TrustScoreBadge trustScore={trustScore} />
             )}
 
-            <Button className="w-full rounded-full">Follow Creator</Button>
+            {/* Own-profile nudge */}
+            {isOwnProfile && !isTracksLoading && (
+              <TrustScoreNudge
+                profile={{
+                  bio: profile.bio,
+                  creatorStatement: profile.creatorStatement,
+                  avatarUrl: profile.avatarUrl,
+                  genres: profile.genres,
+                  aiToolsUsed: profile.aiToolsUsed,
+                }}
+                tracks={tracksForScore}
+                trustScore={trustScore}
+              />
+            )}
+
+            {!isOwnProfile && (
+              <Button className="w-full rounded-full">Follow Creator</Button>
+            )}
+            {isOwnProfile && (
+              <Link href="/creator/dashboard">
+                <Button variant="outline" className="w-full rounded-full">Go to Dashboard</Button>
+              </Link>
+            )}
 
             {profile.bio && (
               <p className="text-muted-foreground text-sm leading-relaxed">{profile.bio}</p>
