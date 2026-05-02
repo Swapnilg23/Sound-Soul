@@ -92,9 +92,9 @@ export default function CreatorProfile() {
     setFollowerCount(c => wasFollowing ? Math.max(0, c - 1) : c + 1);
     try {
       if (wasFollowing) {
-        await unfollowMutation.mutateAsync(profile.id);
+        await unfollowMutation.mutateAsync({ creatorId: profile.id });
       } else {
-        await followMutation.mutateAsync(profile.id);
+        await followMutation.mutateAsync({ creatorId: profile.id });
         toast.success(`Following ${profile.artistName}`);
       }
     } catch {

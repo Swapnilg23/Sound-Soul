@@ -44,14 +44,13 @@ function Router() {
         <Route path="/pricing" component={Pricing} />
         <Route path="/explore" component={Explore} />
         <Route path="/track/:slug" component={TrackDetail} />
-        <Route path="/creator/:slug" component={CreatorProfile} />
-        
+
         {/* Listener Routes */}
         <Route path="/library">
           {() => <ProtectedRoute component={Library} />}
         </Route>
-        
-        {/* Creator Routes */}
+
+        {/* Creator Routes — specific paths MUST come before /creator/:slug wildcard */}
         <Route path="/creator/dashboard">
           {() => <ProtectedRoute component={CreatorDashboard} role="creator" />}
         </Route>
@@ -61,6 +60,7 @@ function Router() {
         <Route path="/creator/upload">
           {() => <ProtectedRoute component={CreatorUpload} role="creator" />}
         </Route>
+        <Route path="/creator/:slug" component={CreatorProfile} />
 
         {/* Admin Routes */}
         <Route path="/admin">

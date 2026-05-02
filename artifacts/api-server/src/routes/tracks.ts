@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import {
-  tracksTable, creatorProfilesTable, likesTable, savesTable,
+  tracksTable, creatorProfilesTable, likesTable, savesTable, playEventsTable,
 } from "@workspace/db";
 import { eq, and, sql } from "drizzle-orm";
 import { requireCreator, requireAuth, optionalAuth } from "../lib/auth";
@@ -169,14 +169,17 @@ router.delete("/:slug", requireCreator, async (req, res) => {
   res.json({ message: "Track deleted" });
 });
 
-// Increment play count
+// Increment play count and record play event
 router.post("/:slug/play", async (req, res) => {
   const [track] = await db.select().from(tracksTable).where(eq(tracksTable.slug, req.params.slug)).limit(1);
   if (!track) return res.status(404).json({ error: "Track not found" });
 
-  await db.update(tracksTable)
-    .set({ playCount: sql`${tracksTable.playCount} + 1` })
-    .where(eq(tracksTable.id, track.id));
+  await Promise.all([
+    db.update(tracksTable)
+      .set({ playCount: sql`${tracksTable.playCount} + 1` })
+      .where(eq(tracksTable.id, track.id)),
+    db.insert(playEventsTable).values({ id: generateId(), trackId: track.id }),
+  ]);
 
   res.json({ message: "Play count incremented" });
 });
