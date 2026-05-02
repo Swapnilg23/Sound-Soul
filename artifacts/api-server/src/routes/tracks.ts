@@ -6,8 +6,11 @@ import {
 import { eq, and, sql } from "drizzle-orm";
 import { requireCreator, requireAuth, optionalAuth } from "../lib/auth";
 import { generateId, generateSlug } from "../lib/id";
+import commentsRouter from "./comments";
 
 const router = Router();
+
+router.use("/:slug/comments", commentsRouter);
 
 // Get creator's own tracks
 router.get("/", requireCreator, async (req, res) => {

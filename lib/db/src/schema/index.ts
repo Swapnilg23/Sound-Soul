@@ -7,3 +7,5 @@ export * from "./reports";
 export * from "./waitlist";
 export * from "./notifications";
 export * from "./play-events";
+export * from "./comments";
+export * from "./reposts";

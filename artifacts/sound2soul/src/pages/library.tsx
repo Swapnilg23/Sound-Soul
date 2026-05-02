@@ -1,18 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGetLibrary } from '@workspace/api-client-react';
 import { Link } from 'wouter';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Repeat2 } from 'lucide-react';
 
-type Tab = 'saved' | 'liked' | 'following';
+type Tab = 'saved' | 'liked' | 'reposts' | 'following';
+
+interface Track {
+  id: string;
+  title: string;
+  slug: string;
+  coverImageUrl: string | null;
+  genre: string | null;
+  creator: { artistName: string } | null;
+  repostedAt?: string;
+}
+
+async function apiFetch(path: string) {
+  const token = localStorage.getItem('sound2soul_token');
+  const res = await fetch(path, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
 
 export default function Library() {
   const { data: library, isLoading } = useGetLibrary();
   const [activeTab, setActiveTab] = useState<Tab>('saved');
+  const [reposts, setReposts] = useState<Track[]>([]);
+  const [repostsLoading, setRepostsLoading] = useState(false);
 
-  const tabs: { id: Tab; label: string; count: number | undefined }[] = [
+  useEffect(() => {
+    if (activeTab !== 'reposts') return;
+    setRepostsLoading(true);
+    apiFetch('/api/interactions/library/reposts')
+      .then(d => setReposts(d?.tracks ?? []))
+      .catch(() => {})
+      .finally(() => setRepostsLoading(false));
+  }, [activeTab]);
+
+  const tabs: { id: Tab; label: string; count?: number; icon?: React.ReactNode }[] = [
     { id: 'saved',     label: 'Saved',     count: library?.savedTracks.length },
     { id: 'liked',     label: 'Liked',     count: library?.likedTracks.length },
+    { id: 'reposts',   label: 'Reposts',   count: reposts.length || undefined, icon: <Repeat2 className="h-3.5 w-3.5" /> },
     { id: 'following', label: 'Following', count: library?.followedCreators.length },
   ];
 
@@ -22,7 +54,7 @@ export default function Library() {
         <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
           Your Library
         </h1>
-        <p className="text-muted-foreground">Tracks you've saved, liked, and creators you follow.</p>
+        <p className="text-muted-foreground">Tracks you've saved, liked, reposted, and creators you follow.</p>
       </div>
 
       {/* Tabs */}
@@ -31,15 +63,16 @@ export default function Library() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-5 py-2.5 text-sm font-medium transition-colors relative ${
+            className={`flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium transition-colors relative ${
               activeTab === tab.id
                 ? 'text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
+            {tab.icon}
             {tab.label}
-            {!isLoading && tab.count !== undefined && tab.count > 0 && (
-              <span className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
+            {tab.count !== undefined && tab.count > 0 && (
+              <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                 activeTab === tab.id
                   ? 'bg-primary/20 text-primary'
                   : 'bg-white/8 text-muted-foreground'
@@ -55,7 +88,7 @@ export default function Library() {
       </div>
 
       {/* Content */}
-      {isLoading ? (
+      {isLoading && activeTab !== 'reposts' ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
         </div>
@@ -63,54 +96,50 @@ export default function Library() {
         <>
           {activeTab === 'saved' && (
             library?.savedTracks.length === 0 ? (
-              <EmptyState
-                icon="🎵"
-                message="You haven't saved any tracks yet."
-                sub="Tap the bookmark on any track to save it here."
-                linkText="Explore tracks"
-                href="/explore"
-              />
+              <EmptyState icon="🎵" message="You haven't saved any tracks yet." sub="Tap the bookmark on any track to save it here." linkText="Explore tracks" href="/explore" />
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {library?.savedTracks.map(track => (
-                  <TrackCard key={track.id} track={track} />
-                ))}
+                {library?.savedTracks.map(track => <TrackCard key={track.id} track={track} />)}
               </div>
             )
           )}
 
           {activeTab === 'liked' && (
             library?.likedTracks.length === 0 ? (
+              <EmptyState icon="♥" message="You haven't liked any tracks yet." sub="Tap the heart on any track to like it." linkText="Explore tracks" href="/explore" />
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {library?.likedTracks.map(track => <TrackCard key={track.id} track={track} />)}
+              </div>
+            )
+          )}
+
+          {activeTab === 'reposts' && (
+            repostsLoading ? (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
+              </div>
+            ) : reposts.length === 0 ? (
               <EmptyState
-                icon="♥"
-                message="You haven't liked any tracks yet."
-                sub="Tap the heart on any track to like it."
-                linkText="Explore tracks"
+                icon="🔁"
+                message="You haven't reposted any tracks yet."
+                sub="Hit Repost on any track to share it with your followers."
+                linkText="Discover tracks"
                 href="/explore"
               />
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {library?.likedTracks.map(track => (
-                  <TrackCard key={track.id} track={track} />
-                ))}
+                {reposts.map(track => <TrackCard key={track.id} track={track} reposted />)}
               </div>
             )
           )}
 
           {activeTab === 'following' && (
             library?.followedCreators.length === 0 ? (
-              <EmptyState
-                icon="✦"
-                message="You're not following any creators yet."
-                sub="Follow a creator to get notified when they drop new music."
-                linkText="Discover creators"
-                href="/explore"
-              />
+              <EmptyState icon="✦" message="You're not following any creators yet." sub="Follow a creator to get notified when they drop new music." linkText="Discover creators" href="/explore" />
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {library?.followedCreators.map((creator: any) => (
-                  <CreatorCard key={creator.id} creator={creator} />
-                ))}
+                {library?.followedCreators.map((creator: any) => <CreatorCard key={creator.id} creator={creator} />)}
               </div>
             )
           )}
@@ -120,7 +149,7 @@ export default function Library() {
   );
 }
 
-function TrackCard({ track }: { track: any }) {
+function TrackCard({ track, reposted }: { track: any; reposted?: boolean }) {
   return (
     <Link href={`/track/${track.slug}`}>
       <Card className="bg-card/40 hover:bg-card/80 border-white/5 transition-colors cursor-pointer group">
@@ -135,7 +164,12 @@ function TrackCard({ track }: { track: any }) {
           <div className="flex-grow min-w-0">
             <h3 className="font-semibold text-base truncate group-hover:text-primary transition-colors">{track.title}</h3>
             <p className="text-sm text-muted-foreground truncate mt-0.5">{track.creator?.artistName || 'Unknown Artist'}</p>
-            {track.genre && (
+            {reposted && (
+              <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400/70 mt-1">
+                <Repeat2 className="h-3 w-3" /> Reposted
+              </span>
+            )}
+            {!reposted && track.genre && (
               <span className="text-xs text-muted-foreground/60">{track.genre}</span>
             )}
           </div>

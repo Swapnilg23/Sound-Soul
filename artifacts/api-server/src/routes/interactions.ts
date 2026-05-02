@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import {
-  likesTable, savesTable, followsTable, tracksTable, creatorProfilesTable,
+  likesTable, savesTable, followsTable, tracksTable, creatorProfilesTable, repostsTable,
 } from "@workspace/db";
-import { eq, and, sql, inArray, desc } from "drizzle-orm";
+import { eq, and, sql, inArray, desc, count } from "drizzle-orm";
 import { requireAuth } from "../lib/auth";
 import { generateId } from "../lib/id";
 
@@ -154,6 +154,113 @@ router.get("/interactions/:trackId", requireAuth, async (req, res) => {
   const saved = await db.select().from(savesTable).where(and(eq(savesTable.userId, user.id), eq(savesTable.trackId, trackId))).limit(1);
 
   res.json({ isLiked: !!liked[0], isSaved: !!saved[0] });
+});
+
+// ── Reposts ─────────────────────────────────────────────────────────────────
+
+// GET repost state + count for a track
+router.get("/reposts/:trackId", requireAuth, async (req, res) => {
+  const user = (req as any).user;
+  const { trackId } = req.params;
+
+  const [existing, [{ total }]] = await Promise.all([
+    db.select().from(repostsTable)
+      .where(and(eq(repostsTable.userId, user.id), eq(repostsTable.trackId, trackId)))
+      .limit(1),
+    db.select({ total: count() }).from(repostsTable).where(eq(repostsTable.trackId, trackId)),
+  ]);
+
+  res.json({ isReposted: !!existing[0], count: Number(total) });
+});
+
+// POST repost
+router.post("/reposts/:trackId", requireAuth, async (req, res) => {
+  const user = (req as any).user;
+  const { trackId } = req.params;
+
+  const existing = await db.select().from(repostsTable)
+    .where(and(eq(repostsTable.userId, user.id), eq(repostsTable.trackId, trackId)))
+    .limit(1);
+
+  if (existing[0]) return res.json({ message: "Already reposted" });
+
+  await db.insert(repostsTable).values({
+    id: generateId(),
+    userId: user.id,
+    trackId,
+    note: req.body.note || null,
+  });
+
+  res.json({ message: "Reposted" });
+});
+
+// DELETE repost
+router.delete("/reposts/:trackId", requireAuth, async (req, res) => {
+  const user = (req as any).user;
+  const { trackId } = req.params;
+
+  await db.delete(repostsTable)
+    .where(and(eq(repostsTable.userId, user.id), eq(repostsTable.trackId, trackId)));
+
+  res.json({ message: "Repost removed" });
+});
+
+// GET /reposts/feed — tracks reposted by followed creators OR the user themselves
+router.get("/reposts/feed", requireAuth, async (req, res) => {
+  const user = (req as any).user;
+
+  const follows = await db.select({ creatorId: followsTable.creatorId })
+    .from(followsTable)
+    .where(eq(followsTable.followerUserId, user.id));
+
+  const creatorIds = follows.map(f => f.creatorId);
+
+  // Get users that ARE followed creators (join creator profiles → users)
+  const followedCreatorUsers = creatorIds.length > 0
+    ? await db.select({ userId: creatorProfilesTable.userId })
+        .from(creatorProfilesTable)
+        .where(inArray(creatorProfilesTable.id, creatorIds))
+    : [];
+
+  const followedUserIds = followedCreatorUsers.map(r => r.userId);
+
+  if (followedUserIds.length === 0) return res.json({ tracks: [] });
+
+  const repostRows = await db
+    .select({ repost: repostsTable, track: tracksTable, creator: creatorProfilesTable })
+    .from(repostsTable)
+    .leftJoin(tracksTable, eq(repostsTable.trackId, tracksTable.id))
+    .leftJoin(creatorProfilesTable, eq(tracksTable.creatorId, creatorProfilesTable.id))
+    .where(
+      and(
+        inArray(repostsTable.userId, followedUserIds),
+        eq(tracksTable.moderationStatus, "approved"),
+        eq(tracksTable.visibility, "public"),
+      )
+    )
+    .orderBy(desc(repostsTable.createdAt))
+    .limit(20);
+
+  res.json({
+    tracks: repostRows
+      .filter(r => r.track)
+      .map(r => ({ ...formatTrack(r.track!, r.creator), repostedAt: r.repost.createdAt?.toISOString?.() ?? r.repost.createdAt })),
+  });
+});
+
+// GET /library/reposts — current user's reposts
+router.get("/library/reposts", requireAuth, async (req, res) => {
+  const user = (req as any).user;
+
+  const rows = await db
+    .select({ track: tracksTable, creator: creatorProfilesTable })
+    .from(repostsTable)
+    .leftJoin(tracksTable, eq(repostsTable.trackId, tracksTable.id))
+    .leftJoin(creatorProfilesTable, eq(tracksTable.creatorId, creatorProfilesTable.id))
+    .where(eq(repostsTable.userId, user.id))
+    .orderBy(desc(repostsTable.createdAt));
+
+  res.json({ tracks: rows.filter(r => r.track).map(r => formatTrack(r.track!, r.creator)) });
 });
 
 function formatTrack(t: any, creator: any) {
