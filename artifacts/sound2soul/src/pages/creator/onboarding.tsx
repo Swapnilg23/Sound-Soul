@@ -285,7 +285,7 @@ export default function CreatorOnboarding() {
 
 function StepWelcome({ onNext }: { onNext: () => void }) {
   const items = [
-    { icon: Shield, color: 'text-violet-400', bg: 'bg-violet-500/10 border-violet-500/20', label: 'Trust Card', desc: 'Every track carries your AI disclosure and rights certification — visible to every listener.' },
+      { icon: Shield, color: 'text-violet-400', bg: 'bg-violet-500/10 border-violet-500/20', label: 'Release Profile', desc: 'Every track carries your AI disclosure and rights information — visible to every listener.' },
     { icon: Mic2, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', label: 'Soul Story', desc: 'Share the emotional origin of your music. Listeners connect with the person behind the track.' },
     { icon: Sparkles, color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20', label: 'Soul Score', desc: 'Your influence grows with every play, like, save, and follow. Watch it climb as your community does.' },
     { icon: Music, color: 'text-rose-400', bg: 'bg-rose-500/10 border-rose-500/20', label: 'Fan Capture', desc: 'Listeners can join your mailing list directly from your track page. Your audience, your relationship.' },
@@ -457,11 +457,11 @@ function StepAITools({ control, errors, tools, setValue }: any) {
         icon={Wand2}
         color="cyan"
         title="Your AI toolkit"
-        desc="Be transparent about the tools in your creative workflow. This builds listener trust — and powers your Trust Card."
+        desc="Be transparent about the tools in your creative workflow. This builds listener trust — and powers your release profile."
       />
 
       <div className="bg-cyan-500/6 border border-cyan-500/15 rounded-2xl p-4 text-sm text-cyan-300/70 leading-relaxed">
-        Sound2Soul celebrates AI creativity. We only ask that you're honest about it. Transparency here directly improves your Trust Score.
+        Sound2Soul celebrates AI creativity. We only ask that you're honest about it. Transparency here directly improves your release readiness.
       </div>
 
       <div>
@@ -502,7 +502,7 @@ function StepGuidelines({ control, errors, accepted, setValue }: any) {
         icon={Shield}
         color="violet"
         title="Community guidelines"
-        desc="Sound2Soul is a trust-first platform. These are the commitments we ask of every creator."
+        desc="Sound2Soul is the AI Music Trust Profile and Pre-Distribution Readiness Layer for AI-assisted music creators."
       />
 
       <div className="bg-card/30 border border-white/8 rounded-2xl p-5 space-y-3">

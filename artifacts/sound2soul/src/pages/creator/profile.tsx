@@ -489,7 +489,7 @@ export default function CreatorProfile() {
                 ) : activity.length === 0 ? (
                   <div className="text-center py-16 bg-card/20 rounded-2xl border border-white/5 border-dashed">
                     <div className="text-3xl mb-3 opacity-30">🎵</div>
-                    <p className="font-medium text-sm mb-1">No activity yet</p>
+              <p className="font-medium text-sm mb-1">No activity yet</p>
                     <p className="text-xs text-muted-foreground">
                       {profile.artistName}'s releases and reposts will appear here.
                     </p>

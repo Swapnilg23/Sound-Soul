@@ -8,7 +8,7 @@ import { ChevronDown } from 'lucide-react';
 const FAQ_ITEMS = [
   {
     q: 'Do I need to use AI to create music here?',
-    a: 'No. Sound2Soul welcomes all creators — whether you use AI tools or create entirely by hand. The platform is built for trust-first publishing, not any specific production method. Human-made music is celebrated just as much as AI-assisted work.',
+    a: 'No. Sound2Soul welcomes all creators — whether you use AI tools or create entirely by hand. The platform is built to help AI-assisted music earn trust, fans, and emotional meaning before distribution. Human-made music is celebrated just as much as AI-assisted work.',
   },
   {
     q: 'What does "AI Disclosed" mean on a track?',
@@ -238,7 +238,7 @@ export default function Landing() {
             transition={{ duration: 0.85, delay: 0.15, ease: 'easeOut' }}
             className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
           >
-            A platform where AI-assisted creators publish tracks with emotional context, disclose their process, and build a genuine fanbase.
+            Create a public AI music trust profile, document your creative process, tell the story behind every track, collect fans, and prepare your releases for platforms like DistroKid, Spotify, Apple Music, YouTube Music, and SoundCloud.
           </motion.p>
 
           <motion.div
@@ -253,13 +253,13 @@ export default function Landing() {
                   href="/signup"
                   className="inline-flex items-center justify-center text-base font-semibold bg-foreground text-background px-8 py-3 rounded-full hover:bg-foreground/90 transition-colors duration-150 w-full sm:w-auto"
                 >
-                  Start Creating
+                  Create Your Trust Profile
                 </Link>
                 <Link
                   href="/explore"
                   className="inline-flex items-center justify-center text-base font-medium bg-white/8 text-foreground px-8 py-3 rounded-full hover:bg-white/12 transition-colors duration-150 border border-white/10 w-full sm:w-auto"
                 >
-                  Explore Music
+                  Explore Trusted Tracks
                 </Link>
               </>
             ) : (
@@ -267,43 +267,32 @@ export default function Landing() {
                 href={user.role === 'creator' ? '/creator/dashboard' : '/explore'}
                 className="inline-flex items-center justify-center text-base font-semibold bg-foreground text-background px-8 py-3 rounded-full hover:bg-foreground/90 transition-colors duration-150"
               >
-                {user.role === 'creator' ? 'Go to Dashboard' : 'Explore Music'}
+                {user.role === 'creator' ? 'Go to Dashboard' : 'Explore Trusted Tracks'}
               </Link>
             )}
           </motion.div>
         </div>
       </section>
 
-      {/* ── Trust signal strip ── */}
+      {/* ── Trust layer intro ── */}
       <section className="py-10 border-y border-white/5">
         <div className="max-w-4xl mx-auto px-6 flex flex-col items-center gap-5">
           <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground/40">
-            Every track on Sound2Soul comes with
+            Not a distributor. Your pre-distribution trust layer.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
-            {[
-              { icon: '✦', label: 'AI Disclosed' },
-              { icon: '✦', label: 'Rights Certified' },
-              { icon: '✦', label: 'Soul Story' },
-              { icon: '✦', label: 'Creator Identity' },
-              { icon: '✦', label: 'Fan Capture' },
-            ].map(item => (
-              <div key={item.label} className="flex items-center gap-2">
-                <span className="text-primary text-xs">{item.icon}</span>
-                <span className="text-sm font-medium text-muted-foreground/70">{item.label}</span>
-              </div>
-            ))}
-          </div>
+          <p className="text-sm text-muted-foreground text-center max-w-3xl">
+            Sound2Soul does not replace distribution platforms. Instead, it helps AI-assisted music creators organize the story, disclosure, rights information, and fan interest behind every track before they release it widely.
+          </p>
         </div>
       </section>
 
-      {/* ── Three pillars ── */}
+      {/* ── Comparison cards ── */}
       <section className="py-28">
         <div className="max-w-6xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-16 space-y-3">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">More than playback.</h2>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Build trust before you distribute.</h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Sound2Soul gives every track the context listeners deserve.
+              DistroKid gets your music into stores. Sound2Soul helps your AI-assisted music earn trust, fans, and emotional meaning before it gets there.
             </p>
           </div>
 
@@ -314,9 +303,9 @@ export default function Landing() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-3">Radical Transparency</h3>
+              <h3 className="text-xl font-bold mb-3">AI generators help you create songs.</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Every track carries an AI Process Disclosed badge. Show listeners exactly how AI contributed to your work.
+                Great for making ideas fast, but not built to document the release story, rights context, or listener trust around a track.
               </p>
             </div>
 
@@ -326,9 +315,9 @@ export default function Landing() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-3">Soul Stories</h3>
+              <h3 className="text-xl font-bold mb-3">Distributors help you send songs to stores.</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Every track comes with a Soul Story — the memory, emotion, or moment that sparked its creation.
+                Useful for release delivery, but they do not help you build the public profile, emotional story, or fan demand first.
               </p>
             </div>
 
@@ -338,9 +327,9 @@ export default function Landing() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-3">Real Audience Growth</h3>
+              <h3 className="text-xl font-bold mb-3">Sound2Soul builds trust, story, and fan demand.</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Every follow, save, and play builds your presence on Sound2Soul. Listeners discover you here — and come back here.
+                Document your creative process, show creator-certified rights information, publish emotionally rich track pages, and collect fans before and after release.
               </p>
             </div>
           </div>

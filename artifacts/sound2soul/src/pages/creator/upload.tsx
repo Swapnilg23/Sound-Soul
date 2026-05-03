@@ -89,7 +89,7 @@ export default function CreatorUpload() {
     <div className="min-h-[calc(100vh-4rem)] p-4 md:p-8 max-w-3xl mx-auto space-y-8">
       <div>
         <h1 className="text-3xl font-bold mb-2">Upload Track</h1>
-        <p className="text-muted-foreground">Share your music with transparency and context.</p>
+        <p className="text-muted-foreground">Prepare your release before distribution with transparency, rights info, and story.</p>
       </div>
 
       <Form {...form}>
@@ -174,7 +174,7 @@ export default function CreatorUpload() {
           <Card className="bg-card/50 border-white/10">
             <CardHeader>
               <CardTitle>Context & Transparency</CardTitle>
-              <CardDescription>This information will appear on the track's Trust Card.</CardDescription>
+              <CardDescription>This information will appear on your track's release-ready profile.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <FormField
@@ -183,7 +183,7 @@ export default function CreatorUpload() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Soul Story</FormLabel>
-                    <FormDescription>What emotion, memory, or moment inspired this track?</FormDescription>
+                    <FormDescription>Document the emotion, memory, or moment behind this track.</FormDescription>
                     <FormControl>
                       <Textarea 
                         placeholder="I created this track when..." 
@@ -202,7 +202,7 @@ export default function CreatorUpload() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>AI Involvement</FormLabel>
-                    <FormDescription>AI process disclosed</FormDescription>
+                    <FormDescription>Document your AI creative process.</FormDescription>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className="bg-background/50">
@@ -264,11 +264,11 @@ export default function CreatorUpload() {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel className="font-semibold text-primary">
-                        Creator-certified rights
+                        Creator-certified rights information
                       </FormLabel>
                       <FormDescription>
-                        I certify that I have the right to publish this track and its components. 
-                        This information is provided by the creator. Sound2Soul does not provide legal clearance or copyright verification.
+                        I certify that I have the right to publish this track and its components.
+                        This information is provided by the creator. Sound2Soul does not provide legal clearance, copyright verification, royalty collection, or distribution.
                       </FormDescription>
                     </div>
                   </FormItem>

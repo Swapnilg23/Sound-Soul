@@ -1,0 +1,59 @@
+Update the existing Sound2Soul app positioning and product language.
+
+New positioning:
+Sound2Soul is the AI Music Trust Profile and Pre-Distribution Readiness Layer for AI-assisted music creators.
+
+Sound2Soul should NOT position itself as a generic music upload platform, SoundCloud clone, DistroKid alternative, or AI music generator.
+
+Sound2Soul should position itself as:
+“Before you distribute your AI-assisted music, build trust, document your creative process, tell the emotional story, collect fans, and prepare your release profile.”
+
+Core message:
+“DistroKid gets your music into stores. Sound2Soul helps your AI-assisted music earn trust, fans, and emotional meaning before it gets there.”
+
+Update the app copy across landing page, dashboard, upload flow, track pages, creator profiles, pricing page, and empty states.
+
+Replace generic phrases like:
+- Upload your music
+- Share your songs
+- Monetize your music
+- AI music platform
+- Music streaming platform
+
+With sharper phrases:
+- Build your AI music trust profile
+- Prepare your release before distribution
+- Document your AI creative process
+- Publish emotionally rich track pages
+- Collect fans before and after release
+- Show creator-certified rights information
+- Build trust before you distribute
+- Create a release-ready music identity
+
+Hero section:
+Headline:
+“Build Trust Before You Distribute”
+
+Subheadline:
+“Create a public AI music trust profile, document your creative process, tell the story behind every track, collect fans, and prepare your releases for platforms like DistroKid, Spotify, Apple Music, YouTube Music, and SoundCloud.”
+
+Primary CTA:
+“Create Your Trust Profile”
+
+Secondary CTA:
+“Explore Trusted Tracks”
+
+Add a section after hero:
+Title:
+“Not a distributor. Your pre-distribution trust layer.”
+
+Copy:
+“Sound2Soul does not replace distribution platforms. Instead, it helps AI-assisted music creators organize the story, disclosure, rights information, and fan interest behind every track before they release it widely.”
+
+Add comparison cards:
+1. AI generators help you create songs.
+2. Distributors help you send songs to stores.
+3. Sound2Soul helps you build trust, story, and fan demand around each release.
+
+Add a disclaimer in footer and relevant trust sections:
+“Sound2Soul does not provide legal clearance, copyright verification, royalty collection, or distribution. Rights information is provided by creators and may be reviewed or removed if concerns are reported.”

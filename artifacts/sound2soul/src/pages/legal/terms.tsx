@@ -60,7 +60,7 @@ export default function TermsOfService() {
 
           <H2>4. AI Disclosure Obligation</H2>
           <p>
-            Sound2Soul is a trust-first platform. All creators are required to accurately disclose the extent of AI
+            Sound2Soul is the AI Music Trust Profile and Pre-Distribution Readiness Layer for AI-assisted music creators. All creators are required to accurately disclose the extent of AI
             involvement in each uploaded track. Misrepresentation of AI usage is a material breach of these Terms and may
             result in immediate account termination.
           </p>

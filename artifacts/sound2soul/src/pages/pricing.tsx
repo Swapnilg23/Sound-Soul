@@ -31,7 +31,7 @@ export default function Pricing() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16 space-y-3">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Simple, transparent pricing</h1>
-          <p className="text-lg text-muted-foreground">Choose the plan that fits your creative journey.</p>
+          <p className="text-lg text-muted-foreground">Choose the plan that fits your release readiness journey.</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-start">
@@ -43,18 +43,18 @@ export default function Pricing() {
               <div className="text-4xl font-bold mt-4 mb-2">
                 $0<span className="text-lg text-muted-foreground font-normal">/mo</span>
               </div>
-              <CardDescription>Discover AI-assisted music. Free, forever.</CardDescription>
+              <CardDescription>Discover emotionally rich, creator-certified tracks. Free, forever.</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <ul className="space-y-3 text-sm">
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Unlimited listening
+                  <CheckIcon /> Unlimited discovery
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckIcon /> Save tracks &amp; follow creators
                 </li>
                 <li className="flex items-center gap-2 text-muted-foreground">
-                  <AdIcon /> Ad-supported listening
+                  <AdIcon /> Ad-supported discovery
                 </li>
               </ul>
             </CardContent>
@@ -75,27 +75,27 @@ export default function Pricing() {
               <div className="text-4xl font-bold mt-4 mb-2">
                 $9<span className="text-lg text-muted-foreground font-normal">/mo</span>
               </div>
-              <CardDescription>For independent AI-assisted creators.</CardDescription>
+              <CardDescription>Build your AI music trust profile before distribution.</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <ul className="space-y-3 text-sm">
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Custom public profile
+                  <CheckIcon /> Create your trust profile
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Unlimited track uploads
+                  <CheckIcon /> Prepare release-ready track pages
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Trust Card &amp; Soul Stories
+                  <CheckIcon /> Trust profile, Soul Stories &amp; rights info
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> New release notifications to followers
+                  <CheckIcon /> Collect fans before and after release
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Basic analytics
+                  <CheckIcon /> Basic release insights
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Ad-free for your listeners
+                  <CheckIcon /> Ad-free fan experience
                 </li>
               </ul>
             </CardContent>
@@ -131,7 +131,7 @@ export default function Pricing() {
               <div className="text-4xl font-bold mt-4 mb-2">
                 $19<span className="text-lg text-muted-foreground font-normal">/mo</span>
               </div>
-              <CardDescription>Advanced tools for serious creators.</CardDescription>
+              <CardDescription>Advanced tools to build trust before you distribute.</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <ul className="space-y-3 text-sm">
@@ -139,7 +139,7 @@ export default function Pricing() {
                   <CheckIcon /> Everything in Creator Pro
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Advanced listener analytics
+                  <CheckIcon /> Advanced release analytics
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckIcon /> Priority placement on Explore
@@ -180,7 +180,7 @@ export default function Pricing() {
 
         {/* Revenue model note */}
         <p className="text-center text-xs text-muted-foreground/40 mt-12 max-w-md mx-auto">
-          Free-tier listeners fund the platform through ads. Pro and Studio subscriptions remove ads and unlock creator tools.
+          Free-tier listeners fund the platform through ads. Pro and Studio subscriptions unlock trust-building creator tools.
         </p>
       </div>
     </div>
