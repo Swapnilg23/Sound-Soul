@@ -30,37 +30,49 @@ export default function Pricing() {
     <div className="min-h-[calc(100vh-3.5rem)] py-20 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16 space-y-3">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Simple, transparent pricing</h1>
-          <p className="text-lg text-muted-foreground">Choose the plan that fits your release readiness journey.</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Build trust around every AI-assisted release.</h1>
+          <p className="text-lg text-muted-foreground">Sound2Soul helps creators document their process, publish emotionally rich track pages, collect fans, and prepare release profiles before distribution.</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-start">
 
-          {/* Free / Listener Plan */}
+          {/* Free Creator */}
           <Card className="bg-card/50 border-white/8 flex flex-col">
             <CardHeader>
-              <CardTitle className="text-2xl">Listener</CardTitle>
+              <CardTitle className="text-2xl">Free Creator</CardTitle>
               <div className="text-4xl font-bold mt-4 mb-2">
-                $0<span className="text-lg text-muted-foreground font-normal">/mo</span>
+                $0
               </div>
-              <CardDescription>Discover emotionally rich, creator-certified tracks. Free, forever.</CardDescription>
+              <CardDescription>Start building creator trust profiles and public track pages.</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <ul className="space-y-3 text-sm">
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Unlimited discovery
+                  <CheckIcon /> 3 public trust profiles
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Save tracks &amp; follow creators
+                  <CheckIcon /> Public creator profile
                 </li>
                 <li className="flex items-center gap-2 text-muted-foreground">
-                  <AdIcon /> Ad-supported discovery
+                  <CheckIcon /> Soul Story track pages
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon /> AI process disclosure
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon /> Creator-certified rights fields
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon /> Basic fan capture
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon /> Basic plays, likes, saves
                 </li>
               </ul>
             </CardContent>
             <CardFooter>
               <Button className="w-full rounded-full" variant="outline" asChild>
-                <Link href="/signup">Sign Up Free</Link>
+                <Link href="/signup">Start Free</Link>
               </Button>
             </CardFooter>
           </Card>
@@ -73,29 +85,35 @@ export default function Pricing() {
             <CardHeader>
               <CardTitle className="text-2xl">Creator Pro</CardTitle>
               <div className="text-4xl font-bold mt-4 mb-2">
-                $9<span className="text-lg text-muted-foreground font-normal">/mo</span>
+                $9/month
               </div>
-              <CardDescription>Build your AI music trust profile before distribution.</CardDescription>
+              <CardDescription>For creators preparing releases and growing their audience.</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <ul className="space-y-3 text-sm">
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Create your trust profile
+                  <CheckIcon /> 25 public trust profiles
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Prepare release-ready track pages
+                  <CheckIcon /> Distribution readiness checklist
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Trust profile, Soul Stories &amp; rights info
+                  <CheckIcon /> AI Music Release Notes
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Collect fans before and after release
+                  <CheckIcon /> Fan email export
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Basic release insights
+                  <CheckIcon /> External distribution links
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Ad-free fan experience
+                  <CheckIcon /> Advanced creator profile
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon /> Track analytics
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon /> Featured submission eligibility
                 </li>
               </ul>
             </CardContent>
@@ -103,7 +121,7 @@ export default function Pricing() {
               <Dialog>
                 <DialogTrigger asChild>
                   <Button className="w-full rounded-full" onClick={() => setSelectedPlan('pro')}>
-                    Join Waitlist
+                    Join Pro Waitlist
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="bg-card border-white/10">
@@ -129,26 +147,35 @@ export default function Pricing() {
             <CardHeader>
               <CardTitle className="text-2xl">Creator Studio</CardTitle>
               <div className="text-4xl font-bold mt-4 mb-2">
-                $19<span className="text-lg text-muted-foreground font-normal">/mo</span>
+                $19/month
               </div>
-              <CardDescription>Advanced tools to build trust before you distribute.</CardDescription>
+              <CardDescription>For larger catalogs, deeper documentation, and launch planning.</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
               <ul className="space-y-3 text-sm">
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Everything in Creator Pro
+                  <CheckIcon /> 100 public trust profiles
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Advanced release analytics
+                  <CheckIcon /> Full release documentation
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Priority placement on Explore
+                  <CheckIcon /> Private and unlisted trust profiles
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Custom profile themes
+                  <CheckIcon /> Priority review
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckIcon /> Dedicated creator support
+                  <CheckIcon /> Portfolio page
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon /> Advanced fan insights
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon /> Launch campaign notes
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon /> Future monetization tools
                 </li>
               </ul>
             </CardContent>
@@ -156,7 +183,7 @@ export default function Pricing() {
               <Dialog>
                 <DialogTrigger asChild>
                   <Button className="w-full rounded-full" variant="outline" onClick={() => setSelectedPlan('studio')}>
-                    Join Waitlist
+                    Join Studio Waitlist
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="bg-card border-white/10">
@@ -178,9 +205,8 @@ export default function Pricing() {
           </Card>
         </div>
 
-        {/* Revenue model note */}
-        <p className="text-center text-xs text-muted-foreground/40 mt-12 max-w-md mx-auto">
-          Free-tier listeners fund the platform through ads. Pro and Studio subscriptions unlock trust-building creator tools.
+        <p className="text-center text-xs text-muted-foreground/40 mt-12 max-w-2xl mx-auto">
+          Sound2Soul does not provide distribution, legal clearance, royalty collection, or copyright verification.
         </p>
       </div>
     </div>
@@ -195,10 +221,3 @@ function CheckIcon() {
   );
 }
 
-function AdIcon() {
-  return (
-    <svg className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-    </svg>
-  );
-}
