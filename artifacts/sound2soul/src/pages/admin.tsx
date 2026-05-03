@@ -82,8 +82,8 @@ export default function AdminDashboard() {
       <div className="space-y-6">
         <h2 className="text-2xl font-semibold flex items-center gap-3">
           Pending Tracks Queue
-          {tracksData && tracksData.total > 0 && (
-            <Badge variant="destructive" className="rounded-full px-2 py-0.5 text-xs">{tracksData.total}</Badge>
+          {tracksData && tracksData.length > 0 && (
+            <Badge variant="destructive" className="rounded-full px-2 py-0.5 text-xs">{tracksData.length}</Badge>
           )}
         </h2>
 
@@ -91,7 +91,7 @@ export default function AdminDashboard() {
           <div className="space-y-4">
             {[1, 2].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
           </div>
-        ) : tracksData?.tracks.length === 0 ? (
+        ) : tracksData?.length === 0 ? (
           <Card className="bg-card/20 border-white/5 border-dashed">
             <CardContent className="p-12 text-center text-muted-foreground">
               No pending tracks to review.
@@ -99,7 +99,7 @@ export default function AdminDashboard() {
           </Card>
         ) : (
           <div className="grid gap-4">
-            {tracksData?.tracks.map(track => (
+            {tracksData?.map(track => (
               <Card key={track.id} className="bg-card/40 border-white/10">
                 <CardContent className="p-4 flex flex-col md:flex-row items-start md:items-center gap-4 justify-between">
                   <div className="flex items-center gap-4">
