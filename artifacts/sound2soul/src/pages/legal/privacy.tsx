@@ -1,6 +1,6 @@
 import React from 'react';
 
-const EFFECTIVE = 'May 1, 2025';
+const EFFECTIVE = 'May 3, 2026';
 
 export default function PrivacyPolicy() {
   return (
@@ -73,9 +73,7 @@ export default function PrivacyPolicy() {
 
           <H2>4. Creator Content & Public Information</H2>
           <p>
-            Content you publish on Sound2Soul — including your artist name, tracks, Soul Stories, and profile — is public
-            by default and may be indexed by search engines. AI disclosure data and rights certifications you submit are
-            displayed publicly on each track page.
+            Content you publish on Sound2Soul — including your artist name, tracks, Soul Stories, and profile — is public by default and may be indexed by search engines. AI disclosure data, creator-provided rights certifications, and human-contribution notes you submit are displayed publicly on each track page.
           </p>
 
           <H2>5. Cookies & Tracking</H2>
@@ -122,8 +120,7 @@ export default function PrivacyPolicy() {
 
           <H2>10. Changes to This Policy</H2>
           <p>
-            We may update this Privacy Policy periodically. We will post the revised policy with a new effective date
-            and notify registered users of material changes.
+            We may update this Privacy Policy periodically. We will post the revised policy with a new effective date and notify registered users of material changes.
           </p>
 
           <H2>11. Contact</H2>

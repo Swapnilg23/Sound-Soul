@@ -1,6 +1,6 @@
 import React from 'react';
 
-const EFFECTIVE = 'May 1, 2025';
+const EFFECTIVE = 'May 3, 2026';
 
 export default function AIUsagePolicy() {
   return (
@@ -43,8 +43,7 @@ export default function AIUsagePolicy() {
 
           <H2>3. Mandatory Disclosure</H2>
           <p>
-            Every creator must accurately complete the AI disclosure section when uploading a track. Sound2Soul
-            recognises the following disclosure levels:
+            Every creator must accurately complete the AI disclosure section when uploading a track. Sound2Soul recognises the following disclosure levels:
           </p>
           <ul>
             <li>
@@ -87,8 +86,7 @@ export default function AIUsagePolicy() {
             <li>You accept full personal responsibility for any intellectual property claims arising from your content.</li>
           </ul>
           <p>
-            Sound2Soul's Rights Certification is a creator self-certification only. It does not constitute legal
-            clearance or a warranty of copyright ownership from Sound2Soul.
+            Sound2Soul's Rights Certification is creator-provided information only. It does not constitute legal clearance, copyright verification, or a warranty of ownership from Sound2Soul.
           </p>
 
           <H2>6. Moderation of AI Content</H2>

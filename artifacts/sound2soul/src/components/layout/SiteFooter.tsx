@@ -90,7 +90,7 @@ export function SiteFooter() {
               </span>
             </Link>
             <p className="text-xs text-muted-foreground/50 mt-3 leading-relaxed max-w-[180px]">
-              AI Music Trust Profiles for creators preparing to distribute.
+              Creator trust profiles for AI-assisted music release readiness.
             </p>
 
             {/* Social icons */}

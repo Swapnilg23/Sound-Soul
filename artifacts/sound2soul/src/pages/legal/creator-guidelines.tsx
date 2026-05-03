@@ -1,6 +1,6 @@
 import React from 'react';
 
-const EFFECTIVE = 'May 1, 2025';
+const EFFECTIVE = 'May 3, 2026';
 
 export default function CreatorGuidelines() {
   return (
@@ -15,9 +15,7 @@ export default function CreatorGuidelines() {
 
         <div className="bg-violet-500/8 border border-violet-500/20 rounded-2xl p-5 mb-10">
           <p className="text-sm text-violet-300/80 leading-relaxed">
-            Sound2Soul is built on trust. These guidelines exist not to restrict creativity, but to protect creators,
-            listeners, and the community from harm. If you have questions about whether something is allowed, email us
-            before publishing.
+            Sound2Soul is built on trust. These guidelines exist not to restrict creativity, but to protect creators, listeners, and the community from harm. If you have questions about whether something is allowed, email us before publishing.
           </p>
         </div>
 

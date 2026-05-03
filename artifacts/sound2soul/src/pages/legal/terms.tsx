@@ -1,6 +1,6 @@
 import React from 'react';
 
-const EFFECTIVE = 'May 1, 2025';
+const EFFECTIVE = 'May 3, 2026';
 const COMPANY = 'Sound2Soul Inc.';
 
 export default function TermsOfService() {
@@ -60,9 +60,7 @@ export default function TermsOfService() {
 
           <H2>4. AI Disclosure Obligation</H2>
           <p>
-            Sound2Soul is the AI Music Trust Profile and Pre-Distribution Readiness Layer for AI-assisted music creators. All creators are required to accurately disclose the extent of AI
-            involvement in each uploaded track. Misrepresentation of AI usage is a material breach of these Terms and may
-            result in immediate account termination.
+            Sound2Soul is a creator trust and release-readiness platform. All creators are required to accurately disclose the extent of AI involvement in each uploaded track, document human contribution where applicable, and keep rights self-certifications truthful. Misrepresentation of AI usage is a material breach of these Terms and may result in immediate account termination.
           </p>
 
           <H2>5. Prohibited Conduct</H2>
