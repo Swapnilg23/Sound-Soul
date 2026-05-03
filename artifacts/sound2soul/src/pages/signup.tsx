@@ -49,6 +49,8 @@ export default function Signup() {
       
       if (response.user.role === 'creator') {
         setLocation('/creator/onboarding');
+      } else if (response.user.role === 'admin') {
+        setLocation('/admin');
       } else {
         setLocation('/explore');
       }
@@ -147,8 +149,7 @@ export default function Signup() {
   );
 }
 
-// Inline Label for the radio group cards
-import * as LabelPrimitive from "@radix-ui/react-label"
+import * as LabelPrimitive from "@radix-ui/react-label";
 const Label = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
@@ -158,5 +159,5 @@ const Label = React.forwardRef<
     className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${className}`}
     {...props}
   />
-))
+));
 Label.displayName = LabelPrimitive.Root.displayName
