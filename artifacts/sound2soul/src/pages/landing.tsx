@@ -222,7 +222,7 @@ export default function Landing() {
               Your story.
             </span>
             <br />
-            Their{' '}
+            Your{' '}
             <span className="relative inline-block min-w-[3ch]">
               <span className="bg-gradient-to-r from-secondary to-primary bg-clip-text text-transparent">
                 {typed}
@@ -238,7 +238,7 @@ export default function Landing() {
             transition={{ duration: 0.85, delay: 0.15, ease: 'easeOut' }}
             className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
           >
-            A trust-first platform where AI-assisted creators publish tracks with emotional context, disclose their process, and build a genuine fanbase.
+            A platform where AI-assisted creators publish tracks with emotional context, disclose their process, and build a genuine fanbase.
           </motion.p>
 
           <motion.div
