@@ -39,6 +39,19 @@ export const TrustCard: React.FC<TrustCardProps> = ({
   });
   const notes = releaseNotes && typeof releaseNotes === 'object' ? releaseNotes : null;
   const publicNotes = releaseNotesPublic && notes ? notes : null;
+  const notesSummary = publicNotes
+    ? {
+        aiToolsUsed: Array.isArray(notes?.aiToolsUsed) ? notes.aiToolsUsed : [],
+        aiHelpedCreate: Array.isArray(notes?.aiHelpedCreate) ? notes.aiHelpedCreate : [],
+        humanContributed: Array.isArray(notes?.humanContributed) ? notes.humanContributed : [],
+        sourceMaterialNotes: typeof notes?.sourceMaterialNotes === 'string' ? notes.sourceMaterialNotes : '',
+        vocalIdentityNotes: typeof notes?.vocalIdentityNotes === 'string' ? notes.vocalIdentityNotes : '',
+        coverArtSource: typeof notes?.coverArtSource === 'string' ? notes.coverArtSource : '',
+        finalAudioVersion: typeof notes?.finalAudioVersion === 'string' ? notes.finalAudioVersion : '',
+        distributionStatus: typeof notes?.distributionStatus === 'string' ? notes.distributionStatus : '',
+        releasePlanNotes: typeof notes?.releasePlanNotes === 'string' ? notes.releasePlanNotes : '',
+      }
+    : null;
   const readiness = calculateDistributionReadiness({
     title,
     audioUrl,
@@ -125,10 +138,11 @@ export const TrustCard: React.FC<TrustCardProps> = ({
             <p>{publicNotes ? 'Release notes summary available' : 'Release notes not shared publicly'}</p>
             {publicNotes && (
               <ul className="text-xs space-y-1">
-                <li>AI tools disclosed: {String((notes?.aiToolsUsed as unknown[] | undefined)?.length ? 'Yes' : 'No')}</li>
-                <li>Human contribution listed: {notes?.humanContribution ? 'Yes' : 'No'}</li>
-                <li>Vocal/source notes available: {notes?.vocalIdentityNotes || notes?.sourceMaterialNotes ? 'Yes' : 'No'}</li>
-                <li>Distribution status: {String(notes?.distributionStatus || 'Not specified')}</li>
+                <li>AI tools disclosed: {notesSummary?.aiToolsUsed.length ? 'Yes' : 'No'}</li>
+                <li>AI role disclosed: {notesSummary?.aiHelpedCreate.length ? 'Yes' : 'No'}</li>
+                <li>Human contribution listed: {notesSummary?.humanContributed.length ? 'Yes' : 'No'}</li>
+                <li>Vocal/source notes available: {notesSummary?.vocalIdentityNotes || notesSummary?.sourceMaterialNotes ? 'Yes' : 'No'}</li>
+                <li>Distribution status: {notesSummary?.distributionStatus || 'Not specified'}</li>
               </ul>
             )}
           </div>
