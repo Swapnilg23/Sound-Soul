@@ -30,6 +30,7 @@ const uploadSchema = z.object({
   description: z.string().optional(),
   audioUrl: z.string().url('Must be a valid URL (For MVP: paste any link)'),
   coverImageUrl: z.string().url().optional().or(z.literal('')),
+  externalDistributionLinks: z.string().optional(),
   genre: z.string().optional(),
   soulStory: z.string().min(10, 'Soul Story is required').max(1000),
   aiInvolvementType: z.string().min(1, 'AI Involvement Type is required'),
@@ -61,6 +62,7 @@ export default function CreatorUpload() {
       description: '',
       audioUrl: '',
       coverImageUrl: '',
+      externalDistributionLinks: '',
       genre: '',
       soulStory: '',
       aiInvolvementType: '',
@@ -88,6 +90,7 @@ export default function CreatorUpload() {
           description: values.description,
           audioUrl: values.audioUrl,
           coverImageUrl: values.coverImageUrl || undefined,
+          externalDistributionLinks: values.externalDistributionLinks?.split('\n').map(s => s.trim()).filter(Boolean) ?? [],
           genre: values.genre,
           soulStory: values.soulStory,
           aiInvolvementType: values.aiInvolvementType,
@@ -195,6 +198,20 @@ export default function CreatorUpload() {
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="externalDistributionLinks"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>External distribution / profile links</FormLabel>
+                    <FormDescription>Optional URL-only links to creator-provided pages like Spotify, Bandcamp, SoundCloud, YouTube, or a website. One per line.</FormDescription>
+                    <FormControl>
+                      <Textarea placeholder="https://open.spotify.com/...\nhttps://bandcamp.com/...\nhttps://yourwebsite.com" className="h-28 resize-none bg-background/50" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

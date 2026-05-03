@@ -12,6 +12,10 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 
+function normalizeExternalLinks(links?: string[] | null) {
+  return (links ?? []).map(link => link.trim()).filter(Boolean);
+}
+
 interface Comment {
   id: string;
   body: string;
@@ -289,6 +293,7 @@ export default function TrackDetail() {
 
   const isLiked = interactions?.isLiked || false;
   const isSaved = interactions?.isSaved || false;
+  const externalLinks = normalizeExternalLinks(track.externalDistributionLinks as string[] | null);
 
   const isTrackCreator = user && track.creator && (() => {
     const token = localStorage.getItem('sound2soul_token');
@@ -541,8 +546,26 @@ export default function TrackDetail() {
               rightsConfirmation={track.rightsConfirmation as Record<string, unknown>}
               releaseNotes={track.releaseNotes as Record<string, unknown> | null}
               releaseNotesPublic={track.releaseNotesPublic}
-              externalDistributionLinks={track.externalDistributionLinks as string[] | null}
+              externalDistributionLinks={externalLinks}
             />
+
+            {externalLinks.length > 0 && (
+              <Card className="bg-card/40 border-white/10">
+                <CardContent className="p-6 space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-lg">Listen or Follow Elsewhere</h3>
+                    <p className="text-sm text-muted-foreground">External links are provided by the creator. Sound2Soul does not distribute, license, or verify music on external platforms.</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {externalLinks.map(link => (
+                      <Button key={link} variant="outline" asChild className="rounded-full">
+                        <a href={link} target="_blank" rel="noreferrer">{link.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a>
+                      </Button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             <Card className="bg-card/40 border-white/10">
               <CardContent className="p-6 text-center space-y-4">

@@ -9,7 +9,7 @@ import { calculateTrustScore } from '@/lib/trustScore';
 import { TrustScoreBadge } from '@/components/TrustScoreBadge';
 import { TrustScoreNudge } from '@/components/TrustScoreNudge';
 import { toast } from 'sonner';
-import { Repeat2, Sparkles, Play, Share2, Check } from 'lucide-react';
+import { Repeat2, Sparkles, Play, Share2, Check, Link2 } from 'lucide-react';
 
 type Tab = 'tracks' | 'activity';
 
@@ -154,6 +154,9 @@ export default function CreatorProfile() {
     },
     tracks: tracksForScore,
   });
+  const creatorLinks = Array.isArray((profile as any).externalLinks)
+    ? (profile as any).externalLinks.filter((link: string) => typeof link === 'string' && link.trim())
+    : [];
 
   const handleFollow = async () => {
     if (!user) { toast.info('Sign in to follow creators'); return; }
@@ -320,6 +323,23 @@ export default function CreatorProfile() {
                   <div className="flex flex-wrap gap-2">
                     {profile.aiToolsUsed.map(t => (
                       <span key={t} className="text-xs px-2.5 py-1 bg-primary/10 text-primary/80 rounded-full border border-primary/20">{t}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {creatorLinks.length > 0 && (
+                <div className="space-y-3 pt-2">
+                  <h3 className="font-semibold text-xs uppercase tracking-widest text-muted-foreground pt-2 flex items-center gap-2">
+                    <Link2 className="h-3.5 w-3.5" />
+                    Creator Links
+                  </h3>
+                  <p className="text-xs text-muted-foreground">External links are provided by the creator. Sound2Soul does not distribute, license, or verify music on external platforms.</p>
+                  <div className="flex flex-wrap gap-2">
+                    {creatorLinks.map((link: string) => (
+                      <Button key={link} variant="outline" asChild className="rounded-full">
+                        <a href={link} target="_blank" rel="noreferrer">{link.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a>
+                      </Button>
                     ))}
                   </div>
                 </div>
