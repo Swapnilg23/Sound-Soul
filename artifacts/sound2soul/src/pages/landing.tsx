@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { useAuth } from '@/lib/auth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { ChevronDown } from 'lucide-react';
@@ -117,7 +116,6 @@ const FLOAT_VARIANTS = [
 ];
 
 export default function Landing() {
-  const { user } = useAuth();
   const typed = useTypewriter(ROTATING_WORDS);
 
   const leftCards = HERO_CARDS.filter(c => c.side === 'left' || c.side === 'left2');
@@ -247,29 +245,18 @@ export default function Landing() {
             transition={{ duration: 0.85, delay: 0.28, ease: 'easeOut' }}
             className="flex flex-col sm:flex-row items-center justify-center gap-3"
           >
-            {!user ? (
-              <>
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center justify-center text-base font-semibold bg-foreground text-background px-8 py-3 rounded-full hover:bg-foreground/90 transition-colors duration-150 w-full sm:w-auto"
-                >
-                  Create Your Trust Profile
-                </Link>
-                <Link
-                  href="/explore"
-                  className="inline-flex items-center justify-center text-base font-medium bg-white/8 text-foreground px-8 py-3 rounded-full hover:bg-white/12 transition-colors duration-150 border border-white/10 w-full sm:w-auto"
-                >
-                  Explore Trusted Tracks
-                </Link>
-              </>
-            ) : (
-              <Link
-                href={user.role === 'creator' ? '/creator/dashboard' : '/explore'}
-                className="inline-flex items-center justify-center text-base font-semibold bg-foreground text-background px-8 py-3 rounded-full hover:bg-foreground/90 transition-colors duration-150"
-              >
-                {user.role === 'creator' ? 'Go to Dashboard' : 'Explore Trusted Tracks'}
-              </Link>
-            )}
+            <Link
+              href="/signup"
+              className="inline-flex items-center justify-center text-base font-semibold bg-foreground text-background px-8 py-3 rounded-full hover:bg-foreground/90 transition-colors duration-150 w-full sm:w-auto"
+            >
+              Create Your Trust Profile
+            </Link>
+            <Link
+              href="/explore"
+              className="inline-flex items-center justify-center text-base font-medium bg-white/8 text-foreground px-8 py-3 rounded-full hover:bg-white/12 transition-colors duration-150 border border-white/10 w-full sm:w-auto"
+            >
+              Explore Trusted Tracks
+            </Link>
           </motion.div>
         </div>
       </section>

@@ -78,9 +78,10 @@ export default function PrivacyPolicy() {
 
           <H2>5. Cookies & Tracking</H2>
           <p>
-            We use session cookies and localStorage to maintain your authenticated session. We do not currently use
-            third-party advertising trackers. You can clear cookies via your browser settings, though this may affect
-            platform functionality.
+            We use essential cookies and localStorage to maintain your authenticated session and remember platform
+            preferences. Optional analytics or marketing cookies are only enabled if you accept them in the cookie
+            banner. We do not currently use third-party advertising trackers by default. You can clear cookies via your
+            browser settings, though this may affect platform functionality.
           </p>
 
           <H2>6. Data Retention</H2>
