@@ -8,6 +8,8 @@ interface TrustCardProps {
   humanContributionChecklist?: Record<string, unknown>;
   rightsConfirmation?: Record<string, unknown>;
   soulStory?: string;
+  releaseNotes?: Record<string, unknown> | null;
+  releaseNotesPublic?: boolean;
 }
 
 export const TrustCard: React.FC<TrustCardProps> = ({
@@ -15,12 +17,16 @@ export const TrustCard: React.FC<TrustCardProps> = ({
   humanContributionChecklist,
   rightsConfirmation,
   soulStory,
+  releaseNotes,
+  releaseNotesPublic = true,
 }) => {
   const disclosure = calculateTrackDisclosure({
     aiInvolvementType,
     rightsConfirmation,
     soulStory,
   });
+  const notes = releaseNotes && typeof releaseNotes === 'object' ? releaseNotes : null;
+  const publicNotes = releaseNotesPublic && notes ? notes : null;
 
   return (
     <Card className="bg-card/40 border-white/10 shadow-lg relative overflow-hidden">
@@ -65,6 +71,27 @@ export const TrustCard: React.FC<TrustCardProps> = ({
             {humanContributionChecklist && Object.keys(humanContributionChecklist).length > 0
               ? 'Human curation and editing confirmed by creator.'
               : 'Creator has verified their human contributions.'}
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Release Notes
+          </div>
+          <div className="bg-background/50 rounded-xl p-3 text-sm text-muted-foreground border border-white/6 space-y-2">
+            <p>{publicNotes ? 'Release notes summary available' : 'Release notes not shared publicly'}</p>
+            {publicNotes && (
+              <ul className="text-xs space-y-1">
+                <li>AI tools disclosed: {String((notes?.aiToolsUsed as unknown[] | undefined)?.length ? 'Yes' : 'No')}</li>
+                <li>AI role disclosed: {notes?.aiRole ? 'Yes' : 'No'}</li>
+                <li>Human contribution listed: {notes?.humanContribution ? 'Yes' : 'No'}</li>
+                <li>Vocal/source notes available: {notes?.vocalNotes || notes?.sourceNotes ? 'Yes' : 'No'}</li>
+                <li>Distribution status: {String(notes?.distributionStatus || 'Not specified')}</li>
+              </ul>
+            )}
           </div>
         </div>
 

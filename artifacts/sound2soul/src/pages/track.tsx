@@ -534,6 +534,8 @@ export default function TrackDetail() {
               aiInvolvementType={track.aiInvolvementType}
               humanContributionChecklist={track.humanContributionChecklist as Record<string, unknown>}
               rightsConfirmation={track.rightsConfirmation as Record<string, unknown>}
+              releaseNotes={track.releaseNotes as Record<string, unknown> | null}
+              releaseNotesPublic={track.releaseNotesPublic}
             />
 
             <Card className="bg-card/40 border-white/10">

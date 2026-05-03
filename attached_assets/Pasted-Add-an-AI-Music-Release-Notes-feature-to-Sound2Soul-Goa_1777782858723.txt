@@ -1,0 +1,86 @@
+Add an “AI Music Release Notes” feature to Sound2Soul.
+
+Goal:
+Give creators a structured place to document the creative process, AI involvement, human contribution, rights notes, and release preparation for every track.
+
+Add fields to the track create/edit form:
+
+Section title:
+“AI Music Release Notes”
+
+Fields:
+1. AI tools used
+Multi-select or free text:
+Examples: Suno, Udio, ElevenLabs, Soundraw, AIVA, ChatGPT, DAW, GarageBand, Logic Pro, Ableton, Other
+
+2. What did AI help create?
+Checkboxes:
+- Lyrics
+- Melody
+- Instrumental
+- Vocals
+- Arrangement
+- Mixing/mastering
+- Cover art
+- Ideas/prompts only
+- Other
+
+3. What did the human creator contribute?
+Checkboxes:
+- Wrote or edited lyrics
+- Selected prompts and creative direction
+- Chose final outputs
+- Edited arrangement
+- Added vocals
+- Added instruments
+- Mixed/mastered audio
+- Curated emotional story
+- Created cover art
+- Other
+
+4. Source material notes
+Textarea placeholder:
+“Mention any samples, references, uploaded audio, stems, loops, or outside material used. Do not include anything you do not have rights to use.”
+
+5. Vocal identity notes
+Textarea placeholder:
+“Describe whether vocals are human, synthetic, AI-generated, transformed, or based on your own voice. Do not upload tracks imitating real people without permission.”
+
+6. Cover art source
+Dropdown:
+- Created by me
+- AI-assisted
+- Stock/licensed
+- Commissioned
+- Other
+
+7. Final audio version
+Text input:
+Example: final_master_v1.wav
+
+8. Distribution status
+Dropdown:
+- Not distributed yet
+- Preparing for distribution
+- Distributed
+- Private/demo only
+
+9. Release plan notes
+Textarea:
+“Optional notes about launch date, audience, mood, campaign, or distribution plans.”
+
+Store this data in the database as release_notes jsonb or separate columns.
+
+Show a summarized version in the public Track Trust Card:
+- AI tools disclosed
+- AI role disclosed
+- Human contribution listed
+- Vocal/source notes available
+- Distribution status
+
+Important:
+Public display should summarize safely.
+Do not reveal private-sensitive notes unless the creator chooses public visibility.
+Add a toggle:
+“Show release notes summary publicly”
+Default: ON for summary, OFF for detailed notes.

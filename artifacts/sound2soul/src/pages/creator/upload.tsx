@@ -37,6 +37,16 @@ const uploadSchema = z.object({
   rightsConfirmed: z.boolean().refine(val => val === true, {
     message: 'You must confirm your rights to publish'
   }),
+  releaseNotesPublic: z.boolean().default(true),
+  releaseNotesAiToolsUsed: z.string().optional(),
+  releaseNotesAiHelpedCreate: z.array(z.string()).default([]),
+  releaseNotesHumanContributed: z.array(z.string()).default([]),
+  releaseNotesSourceMaterialNotes: z.string().optional(),
+  releaseNotesVocalIdentityNotes: z.string().optional(),
+  releaseNotesCoverArtSource: z.string().optional(),
+  releaseNotesFinalAudioVersion: z.string().optional(),
+  releaseNotesDistributionStatus: z.string().optional(),
+  releaseNotesReleasePlanNotes: z.string().optional(),
 });
 
 export default function CreatorUpload() {
@@ -56,6 +66,16 @@ export default function CreatorUpload() {
       aiInvolvementType: '',
       visibility: 'draft',
       rightsConfirmed: false,
+      releaseNotesPublic: true,
+      releaseNotesAiToolsUsed: '',
+      releaseNotesAiHelpedCreate: [],
+      releaseNotesHumanContributed: [],
+      releaseNotesSourceMaterialNotes: '',
+      releaseNotesVocalIdentityNotes: '',
+      releaseNotesCoverArtSource: '',
+      releaseNotesFinalAudioVersion: '',
+      releaseNotesDistributionStatus: 'Not distributed yet',
+      releaseNotesReleasePlanNotes: '',
     },
   });
 
@@ -73,7 +93,19 @@ export default function CreatorUpload() {
           aiInvolvementType: values.aiInvolvementType,
           visibility: values.visibility as CreateTrackBodyVisibility,
           rightsConfirmation: values.rightsConfirmed ? { confirmed: true, date: new Date().toISOString() } : undefined,
-          humanContributionChecklist: {} // MVP simplification
+          humanContributionChecklist: {},
+          releaseNotes: {
+            aiToolsUsed: values.releaseNotesAiToolsUsed?.split(',').map(s => s.trim()).filter(Boolean) ?? [],
+            aiHelpedCreate: values.releaseNotesAiHelpedCreate,
+            humanContributed: values.releaseNotesHumanContributed,
+            sourceMaterialNotes: values.releaseNotesSourceMaterialNotes,
+            vocalIdentityNotes: values.releaseNotesVocalIdentityNotes,
+            coverArtSource: values.releaseNotesCoverArtSource,
+            finalAudioVersion: values.releaseNotesFinalAudioVersion,
+            distributionStatus: values.releaseNotesDistributionStatus,
+            releasePlanNotes: values.releaseNotesReleasePlanNotes,
+            public: values.releaseNotesPublic,
+          },
         }
       });
       toast.success('Track uploaded successfully');
@@ -173,52 +205,108 @@ export default function CreatorUpload() {
           {/* Context & Transparency */}
           <Card className="bg-card/50 border-white/10">
             <CardHeader>
-              <CardTitle>Context & Transparency</CardTitle>
-              <CardDescription>This information will appear on your track's release-ready profile.</CardDescription>
+              <CardTitle>AI Music Release Notes</CardTitle>
+              <CardDescription>Document your process, rights notes, and release prep for this track.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <FormField
                 control={form.control}
-                name="soulStory"
+                name="releaseNotesPublic"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-white/10 p-4 bg-background/30">
+                    <FormControl>
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold text-primary">Show release notes summary publicly</FormLabel>
+                      <FormDescription>Summary is on by default. Detailed notes stay private unless you choose otherwise.</FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="releaseNotesAiToolsUsed"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Soul Story</FormLabel>
-                    <FormDescription>Document the emotion, memory, or moment behind this track.</FormDescription>
+                    <FormLabel>AI tools used</FormLabel>
+                    <FormDescription>Examples: Suno, Udio, ElevenLabs, Soundraw, AIVA, ChatGPT, DAW, GarageBand, Logic Pro, Ableton, Other</FormDescription>
                     <FormControl>
-                      <Textarea 
-                        placeholder="I created this track when..." 
-                        className="h-32 resize-none bg-background/50" 
-                        {...field} 
-                      />
+                      <Input placeholder="Suno, Udio, Logic Pro" {...field} className="bg-background/50" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
-                name="aiInvolvementType"
+                name="releaseNotesSourceMaterialNotes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>AI Involvement</FormLabel>
-                    <FormDescription>Document your AI creative process.</FormDescription>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="bg-background/50">
-                          <SelectValue placeholder="Select AI involvement level" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {AI_INVOLVEMENT_TYPES.map((t) => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Source material notes</FormLabel>
+                    <FormDescription>Mention samples, references, uploaded audio, stems, loops, or outside material used.</FormDescription>
+                    <FormControl>
+                      <Textarea placeholder="Mention any samples, references, uploaded audio, stems, loops, or outside material used. Do not include anything you do not have rights to use." className="h-28 resize-none bg-background/50" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              <FormField control={form.control} name="releaseNotesVocalIdentityNotes" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vocal identity notes</FormLabel>
+                  <FormDescription>Describe whether vocals are human, synthetic, AI-generated, transformed, or based on your own voice.</FormDescription>
+                  <FormControl>
+                    <Textarea placeholder="Describe whether vocals are human, synthetic, AI-generated, transformed, or based on your own voice." className="h-28 resize-none bg-background/50" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="releaseNotesCoverArtSource" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cover art source</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl><SelectTrigger className="bg-background/50"><SelectValue placeholder="Select cover art source" /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      <SelectItem value="Created by me">Created by me</SelectItem>
+                      <SelectItem value="AI-assisted">AI-assisted</SelectItem>
+                      <SelectItem value="Stock/licensed">Stock/licensed</SelectItem>
+                      <SelectItem value="Commissioned">Commissioned</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="releaseNotesFinalAudioVersion" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Final audio version</FormLabel>
+                  <FormControl><Input placeholder="final_master_v1.wav" {...field} className="bg-background/50" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="releaseNotesDistributionStatus" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Distribution status</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl><SelectTrigger className="bg-background/50"><SelectValue placeholder="Select distribution status" /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      <SelectItem value="Not distributed yet">Not distributed yet</SelectItem>
+                      <SelectItem value="Preparing for distribution">Preparing for distribution</SelectItem>
+                      <SelectItem value="Distributed">Distributed</SelectItem>
+                      <SelectItem value="Private/demo only">Private/demo only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="releaseNotesReleasePlanNotes" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Release plan notes</FormLabel>
+                  <FormControl><Textarea placeholder="Optional notes about launch date, audience, mood, campaign, or distribution plans." className="h-28 resize-none bg-background/50" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
             </CardContent>
           </Card>
 
