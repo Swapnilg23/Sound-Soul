@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { SignupBodyRole } from '@workspace/api-client-react';
+import { useEffect } from 'react';
 
 const signupSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -24,6 +25,13 @@ export default function Signup() {
   const { login: setAuthToken } = useAuth();
   const signupMutation = useSignup();
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    document.title = 'Sign up | Sound2Soul';
+    const description = 'Create your Sound2Soul account to publish AI music trust profiles and grow your audience.';
+    setMeta('description', description);
+    setMeta('robots', 'noindex, nofollow');
+  }, []);
 
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
@@ -147,6 +155,16 @@ export default function Signup() {
       </Card>
     </div>
   );
+}
+
+function setMeta(name: string, content: string, attr: 'name' | 'property' = 'name') {
+  let tag = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${name}"]`);
+  if (!tag) {
+    tag = document.createElement('meta');
+    tag.setAttribute(attr, name);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute('content', content);
 }
 
 import * as LabelPrimitive from "@radix-ui/react-label";

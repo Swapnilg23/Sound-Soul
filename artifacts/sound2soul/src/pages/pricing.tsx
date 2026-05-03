@@ -6,11 +6,24 @@ import { useJoinWaitlist } from '@workspace/api-client-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { useEffect } from 'react';
 
 export default function Pricing() {
   const [email, setEmail] = useState('');
   const [selectedPlan, setSelectedPlan] = useState<'pro' | 'studio' | null>(null);
   const joinWaitlistMutation = useJoinWaitlist();
+
+  useEffect(() => {
+    document.title = 'Pricing | Sound2Soul';
+    const description = 'Compare Sound2Soul creator plans for trust profiles, release documentation, fan capture, and launch planning.';
+    setMeta('description', description);
+    setMeta('og:title', 'Pricing | Sound2Soul', 'property');
+    setMeta('og:description', description, 'property');
+    setMeta('og:type', 'website', 'property');
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', 'Pricing | Sound2Soul');
+    setMeta('twitter:description', description);
+  }, []);
 
   const handleJoinWaitlist = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,6 +224,16 @@ export default function Pricing() {
       </div>
     </div>
   );
+}
+
+function setMeta(name: string, content: string, attr: 'name' | 'property' = 'name') {
+  let tag = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${name}"]`);
+  if (!tag) {
+    tag = document.createElement('meta');
+    tag.setAttribute(attr, name);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute('content', content);
 }
 
 function CheckIcon() {

@@ -3,6 +3,7 @@ import { Link } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { ChevronDown } from 'lucide-react';
+import { useEffect as useDocumentEffect } from 'react';
 
 const FAQ_ITEMS = [
   {
@@ -117,6 +118,18 @@ const FLOAT_VARIANTS = [
 
 export default function Landing() {
   const typed = useTypewriter(ROTATING_WORDS);
+
+  useDocumentEffect(() => {
+    document.title = 'Sound2Soul | AI music trust profiles for creators';
+    const description = 'Build creator-certified AI music trust profiles, document your creative process, and grow fans before distribution.';
+    setMeta('description', description);
+    setMeta('og:title', 'Sound2Soul | AI music trust profiles for creators', 'property');
+    setMeta('og:description', description, 'property');
+    setMeta('og:type', 'website', 'property');
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', 'Sound2Soul | AI music trust profiles for creators');
+    setMeta('twitter:description', description);
+  }, []);
 
   const leftCards = HERO_CARDS.filter(c => c.side === 'left' || c.side === 'left2');
   const rightCards = HERO_CARDS.filter(c => c.side === 'right' || c.side === 'right2');
@@ -364,6 +377,16 @@ export default function Landing() {
       <SiteFooter />
     </div>
   );
+}
+
+function setMeta(name: string, content: string, attr: 'name' | 'property' = 'name') {
+  let tag = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${name}"]`);
+  if (!tag) {
+    tag = document.createElement('meta');
+    tag.setAttribute(attr, name);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute('content', content);
 }
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {

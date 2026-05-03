@@ -84,11 +84,11 @@ export default function CreatorProfile() {
   const { user } = useAuth();
 
   const { data: profile, isLoading: isProfileLoading } = useGetCreatorBySlug(slug, {
-    query: { enabled: !!slug }
+    query: { enabled: !!slug, queryKey: ['creator-by-slug', slug] }
   });
 
   const { data: tracksData, isLoading: isTracksLoading } = useGetCreatorTracks(slug, {
-    query: { enabled: !!slug }
+    query: { enabled: !!slug, queryKey: ['creator-tracks', slug] }
   });
 
   const [activeTab, setActiveTab] = useState<Tab>('tracks');

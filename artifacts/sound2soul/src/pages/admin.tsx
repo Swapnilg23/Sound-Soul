@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { Check, X, Star } from 'lucide-react';
+import { useEffect } from 'react';
 
 export default function AdminDashboard() {
   const { data: metrics, isLoading: isMetricsLoading } = useGetAdminMetrics();
@@ -16,6 +17,11 @@ export default function AdminDashboard() {
   const approveMutation = useApproveTrack();
   const rejectMutation = useRejectTrack();
   const featureMutation = useFeatureTrack();
+
+  useEffect(() => {
+    document.title = 'Admin Dashboard | Sound2Soul';
+    setMeta('robots', 'noindex, nofollow');
+  }, []);
 
   const handleApprove = async (trackId: string) => {
     try {
@@ -144,6 +150,16 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
+}
+
+function setMeta(name: string, content: string, attr: 'name' | 'property' = 'name') {
+  let tag = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${name}"]`);
+  if (!tag) {
+    tag = document.createElement('meta');
+    tag.setAttribute(attr, name);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute('content', content);
 }
 
 function StatCard({ title, value, highlight = false }: { title: string, value: string, highlight?: boolean }) {

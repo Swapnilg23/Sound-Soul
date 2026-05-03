@@ -9,6 +9,7 @@ import { AdBanner } from '@/components/AdBanner';
 import { useAuth } from '@/lib/auth';
 import { useAudioPlayer } from '@/lib/audio-player';
 import { toast } from 'sonner';
+import { useEffect as useDocumentEffect } from 'react';
 
 type Tab = 'saved' | 'liked' | 'reposts' | 'following' | 'collections' | 'history';
 
@@ -66,6 +67,12 @@ export default function Library() {
   const [newPlaylistTitle, setNewPlaylistTitle] = useState('');
   const [creatingPlaylist, setCreatingPlaylist] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+
+  useDocumentEffect(() => {
+    document.title = 'Your Library | Sound2Soul';
+    setMeta('description', 'View your saved, liked, reposted tracks and creator collections on Sound2Soul.');
+    setMeta('robots', 'noindex, nofollow');
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'reposts') {
@@ -319,6 +326,16 @@ export default function Library() {
       )}
     </div>
   );
+}
+
+function setMeta(name: string, content: string, attr: 'name' | 'property' = 'name') {
+  let tag = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${name}"]`);
+  if (!tag) {
+    tag = document.createElement('meta');
+    tag.setAttribute(attr, name);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute('content', content);
 }
 
 function HistoryRow({ track }: { track: any }) {

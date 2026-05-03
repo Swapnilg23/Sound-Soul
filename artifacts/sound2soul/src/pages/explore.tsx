@@ -6,6 +6,7 @@ import { Play, Repeat2, Sparkles, Users, ArrowRight, Music2, Flame } from 'lucid
 import { AdBanner } from '@/components/AdBanner';
 import { useAuth } from '@/lib/auth';
 import { useAudioPlayer, PlayerTrack } from '@/lib/audio-player';
+import { useEffect as useDocumentEffect } from 'react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -113,8 +114,21 @@ export default function Explore() {
 
   const { data: searchData, isLoading: isSearchLoading } = useExploreTracks(
     { search: search.length > 2 ? search : undefined, limit: 20 },
-    { query: { enabled: search.length > 2 } }
+    { query: { enabled: search.length > 2, queryKey: ['explore-tracks', search] } }
   );
+
+  useDocumentEffect(() => {
+    const title = 'Explore trusted AI music | Sound2Soul';
+    const description = 'Discover creator-certified tracks, AI disclosure details, Soul Stories, and public trust profiles on Sound2Soul.';
+    document.title = title;
+    setMeta('description', description);
+    setMeta('og:title', title, 'property');
+    setMeta('og:description', description, 'property');
+    setMeta('og:type', 'website', 'property');
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', title);
+    setMeta('twitter:description', description);
+  }, []);
 
   const isSearching = search.length > 2;
   const showFeed = !!user && (isFeedLoading || feedItems.length > 0);
@@ -264,6 +278,16 @@ export default function Explore() {
       )}
     </div>
   );
+}
+
+function setMeta(name: string, content: string, attr: 'name' | 'property' = 'name') {
+  let tag = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${name}"]`);
+  if (!tag) {
+    tag = document.createElement('meta');
+    tag.setAttribute(attr, name);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute('content', content);
 }
 
 // ── Soul in Focus (Creator Spotlight) ─────────────────────────────────────────

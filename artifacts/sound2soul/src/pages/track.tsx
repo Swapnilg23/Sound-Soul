@@ -65,11 +65,11 @@ export default function TrackDetail() {
   const queryClient = useQueryClient();
 
   const { data: track, isLoading } = useGetTrackBySlug(slug, {
-    query: { enabled: !!slug }
+    query: { enabled: !!slug, queryKey: ['track-by-slug', slug] }
   });
 
   const { data: interactions } = useGetTrackInteractions(track?.id || '', {
-    query: { enabled: !!track?.id && !!user }
+    query: { enabled: !!track?.id && !!user, queryKey: ['track-interactions', track?.id || ''] }
   });
 
   const likeMutation = useLikeTrack();
@@ -293,7 +293,7 @@ export default function TrackDetail() {
 
   const isLiked = interactions?.isLiked || false;
   const isSaved = interactions?.isSaved || false;
-  const externalLinks = normalizeExternalLinks(track.externalDistributionLinks as string[] | null);
+  const externalLinks = normalizeExternalLinks((track as any).externalDistributionLinks as string[] | null);
 
   const isTrackCreator = user && track.creator && (() => {
     const token = localStorage.getItem('sound2soul_token');
@@ -544,8 +544,8 @@ export default function TrackDetail() {
               aiInvolvementType={track.aiInvolvementType}
               humanContributionChecklist={track.humanContributionChecklist as Record<string, unknown>}
               rightsConfirmation={track.rightsConfirmation as Record<string, unknown>}
-              releaseNotes={track.releaseNotes as Record<string, unknown> | null}
-              releaseNotesPublic={track.releaseNotesPublic}
+              releaseNotes={(track as any).releaseNotes as Record<string, unknown> | null}
+              releaseNotesPublic={(track as any).releaseNotesPublic}
               externalDistributionLinks={externalLinks}
             />
 
