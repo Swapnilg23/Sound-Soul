@@ -531,11 +531,17 @@ export default function TrackDetail() {
 
           <div className="space-y-6">
             <TrustCard
+              title={track.title}
+              audioUrl={track.audioUrl}
+              coverImageUrl={track.coverImageUrl}
+              genre={track.genre}
+              moodTags={track.moodTags as string[] | null}
               aiInvolvementType={track.aiInvolvementType}
               humanContributionChecklist={track.humanContributionChecklist as Record<string, unknown>}
               rightsConfirmation={track.rightsConfirmation as Record<string, unknown>}
               releaseNotes={track.releaseNotes as Record<string, unknown> | null}
               releaseNotesPublic={track.releaseNotesPublic}
+              externalDistributionLinks={track.externalDistributionLinks as string[] | null}
             />
 
             <Card className="bg-card/40 border-white/10">

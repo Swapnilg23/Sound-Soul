@@ -8,10 +8,18 @@ export interface TrustScoreInput {
     aiToolsUsed?: string[] | null;
   };
   tracks: Array<{
+    title?: string | null;
+    audioUrl?: string | null;
+    coverImageUrl?: string | null;
+    genre?: string | null;
+    moodTags?: string[] | null;
     aiInvolvementType?: string | null;
     rightsConfirmation?: Record<string, unknown> | null;
     soulStory?: string | null;
     humanContributionChecklist?: Record<string, unknown> | null;
+    releaseNotes?: Record<string, unknown> | null;
+    releaseNotesPublic?: boolean | null;
+    externalDistributionLinks?: string[] | null;
   }>;
 }
 
@@ -81,6 +89,20 @@ export interface TrackDisclosureScore {
   hasSoulStory: boolean;
 }
 
+export interface DistributionReadinessScore {
+  score: number;
+  completed: number;
+  total: number;
+  requiredComplete: boolean;
+  optionalComplete: boolean;
+  items: Array<{
+    key: string;
+    label: string;
+    required: boolean;
+    done: boolean;
+  }>;
+}
+
 export function calculateTrackDisclosure(track: {
   aiInvolvementType?: string | null;
   rightsConfirmation?: Record<string, unknown> | null;
@@ -100,4 +122,39 @@ export function calculateTrackDisclosure(track: {
   else { tier = 'starting'; label = 'Minimal Disclosure'; }
 
   return { score, tier, label, hasAiDisclosure, hasRights, hasSoulStory };
+}
+
+export function calculateDistributionReadiness(track: {
+  title?: string | null;
+  audioUrl?: string | null;
+  coverImageUrl?: string | null;
+  genre?: string | null;
+  moodTags?: string[] | null;
+  aiInvolvementType?: string | null;
+  rightsConfirmation?: Record<string, unknown> | null;
+  soulStory?: string | null;
+  humanContributionChecklist?: Record<string, unknown> | null;
+  releaseNotes?: Record<string, unknown> | null;
+  externalDistributionLinks?: string[] | null;
+}): DistributionReadinessScore {
+  const items = [
+    { key: 'audio', label: 'Final audio uploaded', required: true, done: !!track.audioUrl },
+    { key: 'cover', label: 'Cover art uploaded', required: true, done: !!track.coverImageUrl },
+    { key: 'title', label: 'Track title completed', required: true, done: !!track.title?.trim() },
+    { key: 'genre', label: 'Genre selected', required: true, done: !!track.genre?.trim() },
+    { key: 'mood', label: 'Mood tags added', required: true, done: !!(track.moodTags && track.moodTags.length > 0) },
+    { key: 'soulStory', label: 'Soul Story completed', required: true, done: !!(track.soulStory && track.soulStory.trim().length > 15) },
+    { key: 'ai', label: 'AI involvement disclosed', required: true, done: !!track.aiInvolvementType?.trim() },
+    { key: 'human', label: 'Human contribution documented', required: true, done: !!(track.humanContributionChecklist && Object.keys(track.humanContributionChecklist).length > 0) },
+    { key: 'rights', label: 'Rights self-certification completed', required: true, done: !!(track.rightsConfirmation && Object.keys(track.rightsConfirmation).length > 0) },
+    { key: 'notes', label: 'Release notes completed', required: false, done: !!(track.releaseNotes && Object.keys(track.releaseNotes).length > 0) },
+    { key: 'links', label: 'External distribution links added', required: false, done: !!(track.externalDistributionLinks && track.externalDistributionLinks.length > 0) },
+  ];
+  const required = items.filter(item => item.required);
+  const optional = items.filter(item => !item.required);
+  const completed = items.filter(item => item.done).length;
+  const requiredComplete = required.every(item => item.done);
+  const optionalComplete = optional.every(item => item.done);
+  const score = Math.round((required.filter(item => item.done).length / required.length) * 100);
+  return { score, completed, total: items.length, requiredComplete, optionalComplete, items };
 }

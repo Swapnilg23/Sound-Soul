@@ -1,15 +1,21 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { calculateTrackDisclosure } from '@/lib/trustScore';
+import { calculateDistributionReadiness, calculateTrackDisclosure } from '@/lib/trustScore';
 import { TrackDisclosureBadge } from '@/components/TrustScoreBadge';
 
 interface TrustCardProps {
+  title?: string;
+  audioUrl?: string | null;
+  coverImageUrl?: string | null;
+  genre?: string | null;
+  moodTags?: string[] | null;
   aiInvolvementType?: string;
   humanContributionChecklist?: Record<string, unknown>;
   rightsConfirmation?: Record<string, unknown>;
   soulStory?: string;
   releaseNotes?: Record<string, unknown> | null;
   releaseNotesPublic?: boolean;
+  externalDistributionLinks?: string[] | null;
 }
 
 export const TrustCard: React.FC<TrustCardProps> = ({
@@ -19,6 +25,12 @@ export const TrustCard: React.FC<TrustCardProps> = ({
   soulStory,
   releaseNotes,
   releaseNotesPublic = true,
+  title,
+  audioUrl,
+  coverImageUrl,
+  genre,
+  moodTags,
+  externalDistributionLinks,
 }) => {
   const disclosure = calculateTrackDisclosure({
     aiInvolvementType,
@@ -27,6 +39,19 @@ export const TrustCard: React.FC<TrustCardProps> = ({
   });
   const notes = releaseNotes && typeof releaseNotes === 'object' ? releaseNotes : null;
   const publicNotes = releaseNotesPublic && notes ? notes : null;
+  const readiness = calculateDistributionReadiness({
+    title,
+    audioUrl,
+    coverImageUrl,
+    genre,
+    moodTags,
+    aiInvolvementType,
+    rightsConfirmation,
+    soulStory,
+    humanContributionChecklist,
+    releaseNotes,
+    externalDistributionLinks,
+  });
 
   return (
     <Card className="bg-card/40 border-white/10 shadow-lg relative overflow-hidden">
@@ -37,11 +62,26 @@ export const TrustCard: React.FC<TrustCardProps> = ({
           <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
-          Trust &amp; Transparency
+          Distribution Readiness
         </CardTitle>
       </CardHeader>
 
       <CardContent className="pt-4 space-y-5">
+        <div className="space-y-2">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Release Profile Completeness</p>
+              <p className="text-sm text-muted-foreground">Creator-provided information for release preparation</p>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-black tabular-nums">{readiness.score}%</div>
+              <p className="text-[10px] text-muted-foreground">{readiness.completed}/{readiness.total} complete</p>
+            </div>
+          </div>
+          <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-violet-500 to-primary rounded-full" style={{ width: `${readiness.score}%` }} />
+          </div>
+        </div>
 
         {/* Disclosure score badge */}
         <TrackDisclosureBadge disclosure={disclosure} />
@@ -79,16 +119,15 @@ export const TrustCard: React.FC<TrustCardProps> = ({
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            Release Notes
+          Release Notes
           </div>
           <div className="bg-background/50 rounded-xl p-3 text-sm text-muted-foreground border border-white/6 space-y-2">
             <p>{publicNotes ? 'Release notes summary available' : 'Release notes not shared publicly'}</p>
             {publicNotes && (
               <ul className="text-xs space-y-1">
                 <li>AI tools disclosed: {String((notes?.aiToolsUsed as unknown[] | undefined)?.length ? 'Yes' : 'No')}</li>
-                <li>AI role disclosed: {notes?.aiRole ? 'Yes' : 'No'}</li>
                 <li>Human contribution listed: {notes?.humanContribution ? 'Yes' : 'No'}</li>
-                <li>Vocal/source notes available: {notes?.vocalNotes || notes?.sourceNotes ? 'Yes' : 'No'}</li>
+                <li>Vocal/source notes available: {notes?.vocalIdentityNotes || notes?.sourceMaterialNotes ? 'Yes' : 'No'}</li>
                 <li>Distribution status: {String(notes?.distributionStatus || 'Not specified')}</li>
               </ul>
             )}
@@ -109,7 +148,7 @@ export const TrustCard: React.FC<TrustCardProps> = ({
               : 'bg-white/4 text-muted-foreground border-white/6'
             }`}
           >
-            {disclosure.hasRights ? 'Rights to publish confirmed' : 'Rights not yet confirmed'}
+            {disclosure.hasRights ? 'Creator-certified rights confirmed' : 'Rights not yet confirmed'}
           </div>
         </div>
 
