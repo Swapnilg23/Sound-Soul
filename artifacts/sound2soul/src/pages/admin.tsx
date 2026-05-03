@@ -44,18 +44,40 @@ export default function AdminDashboard() {
         <p className="text-muted-foreground">Platform oversight and moderation.</p>
       </div>
 
-      {isMetricsLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)}
-        </div>
-      ) : metrics ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard title="Total Users" value={(metrics.totalCreators + metrics.totalListeners).toString()} />
-          <StatCard title="Pending Tracks" value={metrics.pendingTracks.toString()} highlight={metrics.pendingTracks > 0} />
-          <StatCard title="Total Plays" value={metrics.totalPlays.toString()} />
-          <StatCard title="Open Reports" value={metrics.openReports.toString()} highlight={metrics.openReports > 0} />
-        </div>
-      ) : null}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-semibold">Trust & Fan Growth Metrics</h2>
+        <p className="text-sm text-muted-foreground">Acquisition demo metrics focused on trust metadata, fan capture, creator activation, and release readiness.</p>
+        {isMetricsLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <Skeleton key={i} className="h-28 rounded-xl" />)}
+          </div>
+        ) : metrics ? (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard title="Total creators" value={metrics.totalCreators.toString()} />
+              <StatCard title="Total tracks" value={metrics.totalTracks.toString()} />
+              <StatCard title="Approved public tracks" value={metrics.approvedTracks.toString()} />
+              <StatCard title="Pending review tracks" value={metrics.pendingTracks.toString()} highlight={metrics.pendingTracks > 0} />
+              <StatCard title="Total fan emails collected" value={metrics.totalFanEmails.toString()} />
+              <StatCard title="Total follows" value={(metrics.totalCreators + metrics.totalListeners).toString()} />
+              <StatCard title="Total saves" value={metrics.totalSaves.toString()} />
+              <StatCard title="Total plays" value={metrics.totalPlays.toString()} />
+              <StatCard title="Pro waitlist signups" value={metrics.proWaitlistCount.toString()} />
+              <StatCard title="Reported tracks" value={metrics.openReports.toString()} highlight={metrics.openReports > 0} />
+            </div>
+            <Card className="bg-card/40 border-white/10">
+              <CardHeader>
+                <CardTitle className="text-base">Trust readiness snapshot</CardTitle>
+              </CardHeader>
+              <CardContent className="grid md:grid-cols-3 gap-4 text-sm">
+                <MetricBar label="Approved public tracks" value={metrics.approvedTracks} total={metrics.totalTracks} />
+                <MetricBar label="Pending review" value={metrics.pendingTracks} total={metrics.totalTracks} />
+                <MetricBar label="Fan growth" value={metrics.totalFanEmails} total={Math.max(metrics.totalFanEmails, 1)} />
+              </CardContent>
+            </Card>
+          </>
+        ) : null}
+      </div>
 
       <div className="space-y-6">
         <h2 className="text-2xl font-semibold flex items-center gap-3">
@@ -132,5 +154,20 @@ function StatCard({ title, value, highlight = false }: { title: string, value: s
         <div className={`text-3xl font-bold ${highlight ? 'text-primary' : ''}`}>{value}</div>
       </CardContent>
     </Card>
+  );
+}
+
+function MetricBar({ label, value, total }: { label: string; value: number; total: number }) {
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-muted-foreground">{label}</span>
+        <span className="font-medium">{pct}%</span>
+      </div>
+      <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+        <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
   );
 }
